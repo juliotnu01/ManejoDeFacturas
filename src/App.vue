@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import {  ref } from "vue";
+import VueTailwindDatepicker from 'vue-tailwind-datepicker'
+
 import burgerIcon from './assets/burger.svg'
 import CashIcon from './assets/cash.svg'
 import calendarIon from './assets/calendar.svg'
 import FilePdfIon from './assets/pdf.svg'
 import FileXmlIon from './assets/xml.svg'
+const dateValue: any = ref([])
 
 </script>
 
@@ -35,16 +39,12 @@ import FileXmlIon from './assets/xml.svg'
           <div class="sm:flex sm:items-center sm:justify-between">
             <div>
               <div class="flex items-center gap-x-3">
-                <h2 class="text-lg font-medium text-gray-800 ">Customers</h2>
+                <h2 class="text-lg font-medium text-gray-800 ">Clientes</h2>
 
                 <span class="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full ">
-                  240 vendors
+                  240 clientes
                 </span>
               </div>
-
-              <p class="mt-1 text-sm text-gray-500 ">
-                These companies have purchased in the last 12 months.
-              </p>
             </div>
 
             <div class="flex items-center mt-4 gap-x-3">
@@ -63,39 +63,32 @@ import FileXmlIon from './assets/xml.svg'
                   </defs>
                 </svg>
 
-                <span>Import</span>
-              </button>
-
-              <button
-                class="flex items-center justify-center w-1/2 px-5 py-2 text-sm tracking-wide text-white transition-colors duration-200 bg-blue-500 rounded-lg shrink-0 sm:w-auto gap-x-2 hover:bg-blue-600 ">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                  stroke="currentColor" class="w-5 h-5">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-
-                <span>Add vendor</span>
+                <span>Enviar Facturas</span>
               </button>
             </div>
           </div>
 
-          <div class="mt-6 md:flex md:items-center md:justify-between">
-            <div class="inline-flex overflow-hidden bg-white border divide-x rounded-lg ">
-              <button
-                class="px-5 py-2 text-xs font-medium text-gray-600 transition-colors duration-200 bg-gray-100 sm:text-sm ">
-                View all
-              </button>
+          <div class="mt-6 flex gap-3 items-center align-middle  justify-between ">
+            
+            <vue-tailwind-datepicker v-model="dateValue" class=" w-96 "  placeholder="Seleccionar rango de fechas"/>
 
-              <button class="px-5 py-2 text-xs font-medium text-gray-600 transition-colors duration-200 sm:text-sm ">
-                Monitored
-              </button>
-
-              <button class="px-5 py-2 text-xs font-medium text-gray-600 transition-colors duration-200 sm:text-sm ">
-                Unmonitored
-              </button>
+            <div class="max-w-md mx-auto  w-4/12">
+              <select id="seleccionar" class="block w-full p-2 border rounded-md">
+                <option value="opcion1">Pendiente</option>
+                <option value="opcion2">Rechazada</option>
+                <option value="opcion3">Realizada</option>
+              </select>
             </div>
 
-            <div class="relative flex items-center mt-4 md:mt-0">
+            <div class="relative flex items-center mt-4 md:mt-0  ">
+              <span class="absolute">
+                <svg class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </span>
+              <input type="text" placeholder="Buscar por cliente"
+                class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
+            </div>
+
+            <div class="relative flex items-center mt-4 md:mt-0  w-full">
               <span class="absolute">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                   stroke="currentColor" class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600">
@@ -103,9 +96,10 @@ import FileXmlIon from './assets/xml.svg'
                     d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
               </span>
-              <input type="text" placeholder="Search"
+              <input type="text" placeholder="Buscar"
                 class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
+
           </div>
           <!-- body -->
           <div class="flex flex-col mt-6">
@@ -127,7 +121,7 @@ import FileXmlIon from './assets/xml.svg'
                       <th scope="col" class="px-12 py-3.5  font-normal text-center  text-black ">
                         Documento
                       </th>
-                      
+
                       <th scope="col" class="px-12 py-3.5  font-normal text-center  text-black ">
                         Estado
                       </th>
@@ -185,7 +179,7 @@ import FileXmlIon from './assets/xml.svg'
                         <td class="px-4 py-4 text-center  whitespace-nowrap">
                           <div class="flex gap-1">
                             <img :src="calendarIon" class="w-6 h-6" />
-                            <div class="py-1 px-1 self-center  text-red-700 bg-red-100 rounded">Due today at 18:00</div>
+                            <div class="py-1 px-1 self-center  text-blue-700 bg-blue-100 rounded">Due today at 18:00</div>
                           </div>
                         </td>
                         <td class="px-4 py-4 text-center  whitespace-nowrap">
@@ -203,10 +197,11 @@ import FileXmlIon from './assets/xml.svg'
                         <td class="px-12 py-4 text-center   whitespace-nowrap">
                           <div
                             class=" px-3 py-1  font-normal rounded-full text-emerald-500 gap-x-2 bg-emerald-100/60 flex gap-1 w-fit">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"
+                              fill="currentColor">
                               <path
                                 d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667"
-                                stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" >
+                                stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
                               </path>
                               <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B" stroke-width="1.25"
                                 stroke-linecap="round" stroke-linejoin="round"></circle>
@@ -215,7 +210,7 @@ import FileXmlIon from './assets/xml.svg'
                           </div>
                         </td>
                         <td class="px-4 py-4 text-center  whitespace-nowrap">
-                          <div class="flex gap-1" >
+                          <div class="flex gap-1">
                             <img :src="CashIcon" class="w-6 h-6" />
                             <p class="text-gray-500 self-center ">Peso Colombiano</p>
                           </div>
@@ -249,9 +244,225 @@ import FileXmlIon from './assets/xml.svg'
                           </div>
                         </td>
                         <td class="px-4 py-4 text-center  whitespace-nowrap">
-                          <div class="flex gap-2" >
-                            <img :src="FilePdfIon" class="w-6 h-6"/>
-                            <img :src="FileXmlIon" class="w-6 h-6"/>
+                          <div class="flex gap-2">
+                            <img :src="FilePdfIon" class="w-6 h-6" />
+                            <img :src="FileXmlIon" class="w-6 h-6" />
+                          </div>
+                        </td>
+
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <button
+                            class="px-1 py-1 text-gray-500 transition-colors duration-200 rounded-lg dark:text-gray-300 hover:bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                              stroke="currentColor" class="w-6 h-6">
+                              <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div class="ml-5">
+                            <div
+                              class="bg-gray-200 rounded-sm w-5 h-5 flex flex-shrink-0 justify-center items-center relative">
+                              <input placeholder="checkbox" checked="" type="checkbox"
+                                class="focus:opacity-100 checkbox opacity-0 absolute cursor-pointer w-full h-full" />
+                              <div class="check-icon hidden bg-indigo-700 text-white rounded-sm">
+                                <svg class="icon icon-tabler icon-tabler-check" xmlns="http://www.w3.org/2000/svg"
+                                  width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                  fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                  <path stroke="none" d="M0 0h24v24H0z"></path>
+                                  <path d="M5 12l5 5l10 -10"></path>
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center   whitespace-nowrap">
+                          <div>
+                            1
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div class="flex gap-1">
+                            <img :src="calendarIon" class="w-6 h-6" />
+                            <div class="py-1 px-1 self-center  text-blue-700 bg-blue-100 rounded">Due today at 18:00</div>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div>
+                            <h4 class="text-gray-700 ">Cliente POS</h4>
+                            <p class="text-gray-500 ">22222222222</p>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div>
+                            <p class="text-gray-500 ">SETP-000000000</p>
+                            <h4 class="text-gray-700 ">Factura de Venta Nacional</h4>
+                          </div>
+                        </td>
+                        <td class="px-12 py-4 text-center   whitespace-nowrap">
+                          <div
+                            class=" px-3 py-1  font-normal rounded-full text-red-500 gap-x-2 bg-red-100/60 flex gap-1 w-fit">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"
+                              fill="currentColor">
+                              <path
+                                d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667"
+                                stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+                              </path>
+                              <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B" stroke-width="1.25"
+                                stroke-linecap="round" stroke-linejoin="round"></circle>
+                            </svg>
+                            Rechazada
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div class="flex gap-1">
+                            <img :src="CashIcon" class="w-6 h-6" />
+                            <p class="text-gray-500 self-center ">Peso Colombiano</p>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div>
+                            <h4 class="text-gray-700 ">
+                              $ 999.999,99
+                            </h4>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div>
+                            <h4 class="text-gray-700 ">
+                              $ 999.999,99
+                            </h4>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div>
+                            <h4 class="text-gray-700 ">
+                              $ 999.999,99
+                            </h4>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div>
+                            <h4 class="text-gray-700 ">
+                              $ 999.999,99
+                            </h4>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div class="flex gap-2">
+                            <img :src="FilePdfIon" class="w-6 h-6" />
+                            <img :src="FileXmlIon" class="w-6 h-6" />
+                          </div>
+                        </td>
+
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <button
+                            class="px-1 py-1 text-gray-500 transition-colors duration-200 rounded-lg dark:text-gray-300 hover:bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                              stroke="currentColor" class="w-6 h-6">
+                              <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div class="ml-5">
+                            <div
+                              class="bg-gray-200 rounded-sm w-5 h-5 flex flex-shrink-0 justify-center items-center relative">
+                              <input placeholder="checkbox" checked="" type="checkbox"
+                                class="focus:opacity-100 checkbox opacity-0 absolute cursor-pointer w-full h-full" />
+                              <div class="check-icon hidden bg-indigo-700 text-white rounded-sm">
+                                <svg class="icon icon-tabler icon-tabler-check" xmlns="http://www.w3.org/2000/svg"
+                                  width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                  fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                  <path stroke="none" d="M0 0h24v24H0z"></path>
+                                  <path d="M5 12l5 5l10 -10"></path>
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center   whitespace-nowrap">
+                          <div>
+                            1
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div class="flex gap-1">
+                            <img :src="calendarIon" class="w-6 h-6" />
+                            <div class="py-1 px-1 self-center  text-blue-700 bg-blue-100 rounded">Due today at 18:00</div>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div>
+                            <h4 class="text-gray-700 ">Cliente POS</h4>
+                            <p class="text-gray-500 ">22222222222</p>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div>
+                            <p class="text-gray-500 ">SETP-000000000</p>
+                            <h4 class="text-gray-700 ">Factura de Venta Nacional</h4>
+                          </div>
+                        </td>
+                        <td class="px-12 py-4 text-center   whitespace-nowrap">
+                          <div
+                            class=" px-3 py-1  font-normal rounded-full text-yellow-500 gap-x-2 bg-yellow-100/60 flex gap-1 w-fit">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"
+                              fill="currentColor">
+                              <path
+                                d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667"
+                                stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+                              </path>
+                              <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B" stroke-width="1.25"
+                                stroke-linecap="round" stroke-linejoin="round"></circle>
+                            </svg>
+                            Pendiente
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div class="flex gap-1">
+                            <img :src="CashIcon" class="w-6 h-6" />
+                            <p class="text-gray-500 self-center ">Peso Colombiano</p>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div>
+                            <h4 class="text-gray-700 ">
+                              $ 999.999,99
+                            </h4>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div>
+                            <h4 class="text-gray-700 ">
+                              $ 999.999,99
+                            </h4>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div>
+                            <h4 class="text-gray-700 ">
+                              $ 999.999,99
+                            </h4>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div>
+                            <h4 class="text-gray-700 ">
+                              $ 999.999,99
+                            </h4>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4 text-center  whitespace-nowrap">
+                          <div class="flex gap-2">
+                            <img :src="FilePdfIon" class="w-6 h-6" />
+                            <img :src="FileXmlIon" class="w-6 h-6" />
                           </div>
                         </td>
 
@@ -274,27 +485,26 @@ import FileXmlIon from './assets/xml.svg'
           </div>
           <!-- footer -->
           <div class="mt-6 sm:flex sm:items-center sm:justify-between ">
-            <div class="text-sm text-gray-500 dark:text-gray-400">
-              Page <span class="font-medium text-gray-700 dark:text-gray-100">1 of 10</span>
+            <div class="text-sm text-gray-500 ">
+              Paginas <span class="font-medium text-gray-700 ">1 de 10</span>
             </div>
 
             <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
               <a href="#"
-                class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 dark:bg-gray-900  dark:border-gray-700 dark:hover:bg-gray-800">
+                class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                   class="w-5 h-5 rtl:-scale-x-100">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
                 </svg>
-
                 <span>
-                  previous
+                  Anterior
                 </span>
               </a>
 
               <a href="#"
-                class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-800">
+                class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
                 <span>
-                  Next
+                  Siguiente
                 </span>
 
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -314,6 +524,7 @@ import FileXmlIon from './assets/xml.svg'
     <div class="h-full">
       <!-- Contenido principal aquí -->
     </div>
-</div></template>
+  </div>
+</template>
 
 <style scoped></style>
