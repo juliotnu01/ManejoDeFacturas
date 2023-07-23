@@ -5,8 +5,9 @@ import VueTailwindDatepicker from 'vue-tailwind-datepicker'
 import burgerIcon from './assets/burger.svg'
 import CashIcon from './assets/cash.svg'
 import calendarIon from './assets/calendar.svg'
-import FilePdfIon from './assets/pdf.svg'
-import FileXmlIon from './assets/xml.svg'
+import FilePdfIon from './assets/pdf-svgrepo-com.svg'
+import FileXmlIon from './assets/xml-svgrepo-com.svg'
+import FileZipIon from './assets/zip-svgrepo-com.svg'
 const dateValue: any = ref([])
 
 </script>
@@ -247,6 +248,7 @@ const dateValue: any = ref([])
                           <div class="flex gap-2">
                             <img :src="FilePdfIon" class="w-6 h-6" />
                             <img :src="FileXmlIon" class="w-6 h-6" />
+                            <img :src="FileZipIon" class="w-6 h-6" />
                           </div>
                         </td>
 
@@ -355,6 +357,7 @@ const dateValue: any = ref([])
                           <div class="flex gap-2">
                             <img :src="FilePdfIon" class="w-6 h-6" />
                             <img :src="FileXmlIon" class="w-6 h-6" />
+                            <img :src="FileZipIon" class="w-6 h-6" />
                           </div>
                         </td>
 
@@ -463,6 +466,7 @@ const dateValue: any = ref([])
                           <div class="flex gap-2">
                             <img :src="FilePdfIon" class="w-6 h-6" />
                             <img :src="FileXmlIon" class="w-6 h-6" />
+                            <img :src="FileZipIon" class="w-6 h-6" />
                           </div>
                         </td>
 
