@@ -57,6 +57,9 @@ const filterDocument: any = computed(() => {
 
 
 onMounted(async () => {
+    DataDocument.value = dataLogin.value[0] 
+    from.value = dataLogin.value[1].from 
+    to.value = dataLogin.value[1].to
     console.log({ d:dataLogin.value  })
 })
 </script>
