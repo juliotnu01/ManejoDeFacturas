@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { Ref, ref, onMounted, computed } from "vue";
 import VueTailwindDatepicker from 'vue-tailwind-datepicker'
-
-
 import calendarIon from '../assets/calendar.svg'
 import FilePdfIon from '../assets/pdf-svgrepo-com.svg'
 import FileXmlIon from '../assets/xml-svgrepo-com.svg'
@@ -10,8 +8,8 @@ import FileZipIon from '../assets/zip-svgrepo-com.svg'
 import axios from 'axios'
 const dateValue: any = ref([])
 const DataDocument: Ref<Object | null> = ref(null)
-const token: string | null = localStorage.getItem('token')
-axios.defaults.headers.common = { 'Authorization': `bearer ${token}` }
+import useLoginStore from '@/stores/loginStore'
+
 
 const formatNumber: any = (numero: any = 0) => {
    // Número que quieres formatear con dos decimales
@@ -33,6 +31,23 @@ return numeroFormateado
 const varBuscadorNormal: Ref<String | null> = ref('');
 const from: Ref<number | null> = ref('');
 const to: Ref<number | null> = ref('');
+const store: any = useLoginStore()
+
+
+//---------- variables computed---------------------
+/**
+ * variable para almacenar los datos del usuario conectado
+ */
+ const dataLogin: any = computed({
+    get(){
+        return store.getterDataLogin
+    },
+    set(val){
+        store.setDataLogin(val)
+    }
+});
+
+
 
 const filterDocument: any = computed(() => {
     if(DataDocument.value){
@@ -42,14 +57,7 @@ const filterDocument: any = computed(() => {
 
 
 onMounted(async () => {
-    let { data }: any = await axios.post('http://apidian.oo/login-manejo-factura', { email: "aristacentral@gmail.com", password: "123456789" });
-      
-    localStorage.setItem("token", data.user.api_token)
-    let dataDoc: any = await axios.get('http://apidian.oo/api/get-documents');
-    DataDocument.value = dataDoc.data[1].data
-    from.value = data[1].from
-    to.value = data[1].to
-    console.log(JSON.parse(DataDocument.value[1].request_api))
+    console.log({ d:dataLogin.value  })
 })
 </script>
 
