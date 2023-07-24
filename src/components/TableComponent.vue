@@ -2,7 +2,7 @@
 import { Ref, ref, onMounted, computed } from "vue";
 import VueTailwindDatepicker from 'vue-tailwind-datepicker'
 
-import CashIcon from '../assets/cash.svg'
+
 import calendarIon from '../assets/calendar.svg'
 import FilePdfIon from '../assets/pdf-svgrepo-com.svg'
 import FileXmlIon from '../assets/xml-svgrepo-com.svg'
