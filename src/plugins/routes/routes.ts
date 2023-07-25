@@ -19,7 +19,6 @@ const routes = [
         // Variable seteada como true, redirigir al origen
         next('/'); // Redirige al origen (from.path)
       } else {
-        console.log(variableEnLocalStorage)
         // Variable no seteada o seteada como false, permite la navegación normalmente
         next();
       }

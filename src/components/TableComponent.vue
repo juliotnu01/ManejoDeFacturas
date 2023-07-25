@@ -5,62 +5,102 @@ import calendarIon from '../assets/calendar.svg'
 import FilePdfIon from '../assets/pdf-svgrepo-com.svg'
 import FileXmlIon from '../assets/xml-svgrepo-com.svg'
 import FileZipIon from '../assets/zip-svgrepo-com.svg'
-import axios from 'axios'
 const dateValue: any = ref([])
-const DataDocument: Ref<Object | null> = ref(null)
+const DataDocument: Ref<Array<object> | null> = ref(null)
 import useLoginStore from '@/stores/loginStore'
+import axios from "axios";
+axios.defaults.baseURL = 'http://192.168.0.108:8000';
 
 
 const formatNumber: any = (numero: any = 0) => {
-   // Número que quieres formatear con dos decimales
+    // Número que quieres formatear con dos decimales
 
 
-// Opciones de formato para LATAM (Latinoamérica)
-const opcionesFormato = {
-  style: 'decimal',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-  useGrouping: true,
-};
+    // Opciones de formato para LATAM (Latinoamérica)
+    const opcionesFormato = {
+        style: 'decimal',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        useGrouping: true,
+    };
 
-// Formatear el número con las opciones establecidas
-const numeroFormateado = numero.toLocaleString('es-AR', opcionesFormato);
+    // Formatear el número con las opciones establecidas
+    const numeroFormateado = numero.toLocaleString('es-AR', opcionesFormato);
 
-return numeroFormateado
+    return numeroFormateado
 }
 const varBuscadorNormal: Ref<String | null> = ref('');
-const from: Ref<number | null> = ref('');
-const to: Ref<number | null> = ref('');
+const pagination: Ref<any | null> = ref({});
+
 const store: any = useLoginStore()
+
+const OpcionesPaginas: any = ref([])
+const paginaSelected: Ref<String> = ref('')
 
 
 //---------- variables computed---------------------
 /**
  * variable para almacenar los datos del usuario conectado
  */
- const dataLogin: any = computed({
-    get(){
+const dataLogin: any = computed({
+    get() {
         return store.getterDataLogin
     },
-    set(val){
+    set(val) {
         store.setDataLogin(val)
     }
 });
+const GenerateOpcionDePaginas: any = (url: any = '') => {
+
+    var regex = /page=(\d+)/;
+    var matches = url.match(regex);
+
+    if (matches && matches.length > 1) {
+        var lastNumber = parseInt(matches[1]);
+
+        for (var i = 1; i <= lastNumber; i++) {
+
+            OpcionesPaginas.value[i] = `${axios.defaults.baseURL}/login-manejo-factura?page=${i}`
+        }
+
+
+    } else {
+        console.log("No se encontró ningún número después del parámetro 'page=' en la URL.");
+    }
+}
+const getDataLogin: any = async (urlPAginate: any = null) => {
+    try {
+        var dataL: any = localStorage.getItem('user')
+
+        var model = JSON.parse(dataL)
+
+        let { data } = await axios.post(urlPAginate, { email: model.email, password: model.password })
+        DataDocument.value = data[0]
+        pagination.value = data[1]
+        console.log({ d: data, urlPAginate })
+        GenerateOpcionDePaginas(pagination.value?.last_page_url)
+    } catch (error) {
+        console.log(error)
+    }
+}
+
 
 
 
 const filterDocument: any = computed(() => {
-    if(DataDocument.value){
-       return DataDocument.value.filter((item: any) => item.number.toLowerCase().includes(varBuscadorNormal.value.toLowerCase()));
+    if (DataDocument.value) {
+        return DataDocument.value.filter((item: any) => {
+            const searchTerm = varBuscadorNormal.value?.toLowerCase();
+            const numberMatches = item.number.toLowerCase().includes(searchTerm);
+            const prefixMatches = item.prefix.toLowerCase().includes(searchTerm);
+            return numberMatches || prefixMatches;
+        });
     }
 })
 
 
 onMounted(async () => {
-    DataDocument.value = dataLogin.value[0] 
-    from.value = dataLogin.value[1].from 
-    to.value = dataLogin.value[1].to
-    console.log({ d:dataLogin.value  })
+    getDataLogin(dataLogin.value[1].first_page_url)
 })
 </script>
 
@@ -71,10 +111,6 @@ onMounted(async () => {
             <div>
                 <div class="flex items-center gap-x-3">
                     <h2 class="text-lg font-medium text-gray-800 ">ARISTA SOFTWARE - CONSULTAR DOCUMENTOS ELECTRONICOS</h2>
-
-                    <span class="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full ">
-                        240 esto esta quemado de clientes
-                    </span>
                 </div>
             </div>
 
@@ -111,7 +147,14 @@ onMounted(async () => {
                     <option value="opcion2" class="text-white bg-red-700">POR ENVIAR</option>
                 </select>
             </div>
-
+            <div class="w-4/12 max-w-md mx-auto ">
+                <select id="seleccionar" class="block w-full p-2 border border-gray-500 rounded-lg" @change="getDataLogin(paginaSelected)"  v-model="paginaSelected">
+                    <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas" :key="p" v-if="p !== 0">
+                        Pagina {{ p }}
+                    </option>
+                </select>
+            </div>
+            
             <div class="relative flex items-center mt-1 md:mt-0 ">
                 <span class="absolute">
                     <svg class="w-5 h-5 mx-3 text-gray-500 dark:text-gray-600" fill="none" stroke="currentColor"
@@ -219,7 +262,8 @@ onMounted(async () => {
                                         </div>
                                     </td>
                                     <td class="px-12 py-4 text-center whitespace-nowrap">
-                                        <div :class="{ 'flex justify-center gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-emerald-100/60 w-fit': document.state_document_id == 1, 'flex gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-red-100/60 w-fit': document.state_document_id == 0 }">
+                                        <div
+                                            :class="{ 'flex justify-center gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-emerald-100/60 w-fit': document.state_document_id == 1, 'flex gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-red-100/60 w-fit': document.state_document_id == 0 }">
                                             <svg v-if="document.state_document_id == 1" xmlns="http://www.w3.org/2000/svg"
                                                 width="20" height="20" viewBox="0 0 20 20" fill="#02B126">
                                                 <path
@@ -251,17 +295,19 @@ onMounted(async () => {
                                     <td class="px-4 py-4 text-center whitespace-nowrap">
                                         <div>
                                             <h4 class="text-black text-[14px] ">
-                                                $  {{ formatNumber(document.total) }}
+                                                $ {{ formatNumber(document.total) }}
                                             </h4>
                                         </div>
                                     </td>
                                     <td class="px-2 py-2 text-center whitespace-nowrap">
                                         <div class="flex gap-1">
-                                            <a :href="`http://apidian.oo/api/download/${document.identification_number}/${document.pdf}`" target="__blank">
+                                            <a :href="`http://apidian.oo/api/download/${document.identification_number}/${document.pdf}`"
+                                                target="__blank">
                                                 <img :src="FilePdfIon" class="w-8 h-8" />
                                             </a>
-                                            <a :href="`http://apidian.oo/api/download/${document.identification_number}/${document.xml}`" target="__blank">
-                                                
+                                            <a :href="`http://apidian.oo/api/download/${document.identification_number}/${document.xml}`"
+                                                target="__blank">
+
                                                 <img :src="FileXmlIon" class="w-8 h-8" />
                                             </a>
                                             <img :src="FileZipIon" class="w-8 h-8" />
@@ -287,11 +333,11 @@ onMounted(async () => {
         <!-- footer -->
         <div class="mt-6 sm:flex sm:items-center sm:justify-between ">
             <div class="text-sm text-gray-500 ">
-                Paginas <span class="font-medium text-gray-700 ">{{ from }} de {{ to }}</span>
+                Paginas <span class="font-medium text-gray-700 ">{{ pagination.from }} de {{ pagination.to }}</span>
             </div>
 
             <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
-                <button href="#"
+                <button @click.prevent="getDataLogin(pagination.prev_page_url)"
                     class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         class="w-5 h-5 rtl:-scale-x-100">
@@ -302,7 +348,7 @@ onMounted(async () => {
                     </span>
                 </button>
 
-                <button 
+                <button @click.prevent="getDataLogin(pagination.next_page_url)"
                     class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
                     <span>
                         Siguiente
