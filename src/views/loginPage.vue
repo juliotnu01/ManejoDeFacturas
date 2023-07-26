@@ -7,7 +7,7 @@ import useLoginStore from '@/stores/loginStore'
 import router from '@/plugins/routes/routes'
 const token: string | null = localStorage.getItem('token')
 axios.defaults.headers.common = { 'Authorization': `bearer af8c7e1b680e5791aa604505d4f04ca3e92505e704587b9a4af594b438ae2cac` }
-axios.defaults.baseURL = 'http://192.168.0.108:8000';
+axios.defaults.baseURL = 'http://apidian.oo';
 
 //---------- variables ref---------------------
 /**

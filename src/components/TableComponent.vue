@@ -11,7 +11,7 @@ const dateValue: any = ref([])
 const DataDocument: Ref<Array<object> | null> = ref(null)
 import useLoginStore from '@/stores/loginStore'
 import axios from "axios";
-axios.defaults.baseURL = 'http://192.168.0.108:8000';
+axios.defaults.baseURL = 'http://apidian.oo';
 
 
 const varBuscadorNormal: Ref<String | null> = ref('');
