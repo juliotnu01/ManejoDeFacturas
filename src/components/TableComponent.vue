@@ -7,17 +7,22 @@ import FileXmlIon from '../assets/xml-svgrepo-com.svg'
 import FileZipIon from '../assets/zip-svgrepo-com.svg'
 import sendMailIon from '../assets/send-mail-svgrepo-com.svg'
 import SendInvoiceIon from '../assets/send-svgrepo-com.svg'
-const dateValue: any = ref([])
+const dateValue: Ref<{startDate: String, endDate: String}> = ref({
+    startDate: '',
+    endDate: ''
+})
 const DataDocument: Ref<Array<object> | null> = ref(null)
 import useLoginStore from '@/stores/loginStore'
 import axios from "axios";
 axios.defaults.baseURL = 'http://192.168.0.108:8000';
+const token: string | null = localStorage.getItem('token')
+axios.defaults.headers.common = { 'Authorization': `bearer ${token}` }
 
 
 const varBuscadorNormal: Ref<String | null> = ref('');
 const varBuscadorPrefix: Ref<String | null> = ref('');
+const varBuscadorCliente: Ref<String | null> = ref('');
 const pagination: Ref<any | null> = ref({});
-
 const store: any = useLoginStore()
 
 const OpcionesPaginas: any = ref([])
@@ -79,33 +84,69 @@ const GenerateOpcionDePaginas: any = (url: any = '') => {
 const getDataLogin: any = async (urlPAginate: any = null) => {
     try {
         var dataL: any = localStorage.getItem('user')
-
         var model = JSON.parse(dataL)
-
         let { data } = await axios.post(urlPAginate, { email: model.email, password: model.password })
         DataDocument.value = data[0]
         pagination.value = data[1]
-        console.log({ d: data, urlPAginate })
         GenerateOpcionDePaginas(pagination.value?.last_page_url)
     } catch (error) {
         console.log(error)
     }
 }
-
 const filterDocument: any = computed(() => {
     if (DataDocument.value) {
         return DataDocument.value.filter((item: any) => {
             const searchTerm = varBuscadorNormal.value?.toLowerCase();
             const numberMatches = item.number.toLowerCase().includes(searchTerm);
+            return numberMatches ;
+        });
+    }
+})
+const filterDocumentPrefix: any = computed(() => {
+    if (DataDocument.value) {
+        return filterDocument.value.filter((item: any) => {
+            const searchTerm = varBuscadorPrefix.value?.toLowerCase();
             const prefixMatches = item.prefix.toLowerCase().includes(searchTerm);
-            return numberMatches || prefixMatches;
+            return prefixMatches;
+        });
+    }
+})
+const filterDocumentCliente: any = computed(() => {
+    if (DataDocument.value) {
+        return filterDocumentPrefix.value.filter((item: any) => {
+            const searchTerm = varBuscadorCliente.value?.toLowerCase();
+            const clienteMatches = JSON.parse(item.client).name.toLowerCase().includes(searchTerm);
+            const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
+            return clienteMatches || clienteNumberMatches;
+        });
+    }
+})
+const filterDocumentDate: any = computed(() => {
+    if (DataDocument.value) {
+        return filterDocumentCliente.value.filter((item: any) => {
+            const startDate = dateValue.value.startDate.substring(0,10).toLowerCase();
+            const endDate = dateValue.value.endDate.substring(0,10).toLowerCase();
+            const documentDate = item.created_at.substring(0, 10).toLowerCase();
+
+            // Compare the documentDate with the start and end dates
+            return documentDate >= startDate && documentDate <= endDate;
         });
     }
 })
 
 const SendMail: any = async (data: any) => {
     try {
-        await axios.post('/api/send-email-customer/NO', { "company_idnumber": data.identification_number, "prefix": data.prefix, "number": data.number } )
+        // await axios.post('/api/send-email-customer/NO', { "company_idnumber": data.identification_number, "prefix": data.prefix, "number": data.number } )
+        // await getDataLogin(dataLogin.value[1].first_page_url)
+        // alert('envio con exito');
+        console.log({D:dateValue.value})
+    } catch (error) {
+        console.log(error)
+    }
+}
+const SendInvoice: any = async (data: any) => {
+    try {
+        await axios.post('/api/ubl2.1/invoice', data )
         alert('envio con exito');
     } catch (error) {
         console.log(error)
@@ -151,21 +192,14 @@ onMounted(async () => {
 
         <div class="flex items-center gap-3 mt-1 ">
 
-            <vue-tailwind-datepicker v-model="dateValue"
+            <vue-tailwind-datepicker v-model="dateValue" 
                 class="border border-gray-400 rounded-lg w-96 placeholder-gray-600/70 "
                 placeholder="Seleccionar rango de fechas" />
 
             <div class="w-4/12 max-w-md mx-auto ">
-                <select id="seleccionar" class="block w-full p-2 border border-gray-500 rounded-lg">
-                    <option value="opcion1" class="text-white bg-green-700">ACEPTADA</option>
-                    <option value="opcion2" class="text-white bg-red-700">POR ENVIAR</option>
-                </select>
-            </div>
-            <div class="w-4/12 max-w-md mx-auto ">
                 <select id="seleccionar" class="block w-full p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(paginaSelected)" v-model="paginaSelected">
-                    <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas" :key="p"
-                        v-if="p !== 0">
+                    <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas" :key="p">
                         Pagina {{ p }}
                     </option>
                 </select>
@@ -179,7 +213,7 @@ onMounted(async () => {
                         </path>
                     </svg>
                 </span>
-                <input type="text" placeholder="Buscar por cliente"
+                <input type="text" placeholder="Buscar por cliente" v-model="varBuscadorCliente"
                     class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-600/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
 
@@ -245,7 +279,7 @@ onMounted(async () => {
 
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200 text-[11px]">
-                                <tr v-for="(document, d) in filterDocument" :key="d" class="hover:bg-[#f3b8b0eb]">
+                                <tr v-for="(document, d) in filterDocumentDate" :key="d" class="hover:bg-[#f3b8b0eb]">
                                     <td>
                                         <div class="ml-5">
                                             <div
@@ -341,14 +375,6 @@ onMounted(async () => {
                                         </div>
                                     </td>
                                     <td class="px-4 py-4 text-center whitespace-nowrap flex gap-2 flex-col">
-                                        <!-- <button
-                                            class="px-1 py-1 text-gray-500 transition-colors duration-200 rounded-lg dark:text-gray-300 hover:bg-gray-100">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-                                            </svg>
-                                        </button> -->
                                         <div class="relative">
                                             <button @click.prevent="SendMail(document)"
                                                 class="group relative h-6 w-28 overflow-hidden rounded-lg bg-white text-xs shadow">
@@ -364,6 +390,7 @@ onMounted(async () => {
 
                                         <div class="relative">
                                             <button
+                                                @click.prevent="SendInvoice(JSON.parse(document.request_api))"
                                                 class="group relative h-6 w-28 overflow-hidden rounded-lg bg-white text-xs shadow">
                                                 <div
                                                     class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full">
@@ -390,7 +417,7 @@ onMounted(async () => {
             </div>
 
             <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
-                <button @click.prevent="getDataLogin(pagination.prev_page_url)"
+                <button @click.prevent="getDataLogin(pagination.prev_page_url)" :disabled="pagination.prev_page_url == null"
                     class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         class="w-5 h-5 rtl:-scale-x-100">
@@ -401,7 +428,7 @@ onMounted(async () => {
                     </span>
                 </button>
 
-                <button @click.prevent="getDataLogin(pagination.next_page_url)"
+                <button @click.prevent="getDataLogin(pagination.next_page_url)" :disabled="pagination.next_page_url == null"
                     class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
                     <span>
                         Siguiente
