@@ -5,12 +5,41 @@ import calendarIon from '../assets/calendar.svg'
 import FilePdfIon from '../assets/pdf-svgrepo-com.svg'
 import FileXmlIon from '../assets/xml-svgrepo-com.svg'
 import FileZipIon from '../assets/zip-svgrepo-com.svg'
+import sendMailIon from '../assets/send-mail-svgrepo-com.svg'
+import SendInvoiceIon from '../assets/send-svgrepo-com.svg'
 const dateValue: any = ref([])
 const DataDocument: Ref<Array<object> | null> = ref(null)
 import useLoginStore from '@/stores/loginStore'
 import axios from "axios";
 axios.defaults.baseURL = 'http://192.168.0.108:8000';
 
+
+const varBuscadorNormal: Ref<String | null> = ref('');
+const varBuscadorPrefix: Ref<String | null> = ref('');
+const pagination: Ref<any | null> = ref({});
+
+const store: any = useLoginStore()
+
+const OpcionesPaginas: any = ref([])
+const paginaSelected: Ref<String> = ref('')
+
+
+//---------- variables computed---------------------
+
+/**
+ * variable para almacenar los datos del usuario conectado
+ */
+
+const dataLogin: any = computed({
+    get() {
+        return store.getterDataLogin
+    },
+    set(val) {
+        store.setDataLogin(val)
+    }
+});
+
+//---------- metodos---------------------
 
 const formatNumber: any = (numero: any = 0) => {
     // Número que quieres formatear con dos decimales
@@ -29,27 +58,6 @@ const formatNumber: any = (numero: any = 0) => {
 
     return numeroFormateado
 }
-const varBuscadorNormal: Ref<String | null> = ref('');
-const pagination: Ref<any | null> = ref({});
-
-const store: any = useLoginStore()
-
-const OpcionesPaginas: any = ref([])
-const paginaSelected: Ref<String> = ref('')
-
-
-//---------- variables computed---------------------
-/**
- * variable para almacenar los datos del usuario conectado
- */
-const dataLogin: any = computed({
-    get() {
-        return store.getterDataLogin
-    },
-    set(val) {
-        store.setDataLogin(val)
-    }
-});
 const GenerateOpcionDePaginas: any = (url: any = '') => {
 
     var regex = /page=(\d+)/;
@@ -84,9 +92,6 @@ const getDataLogin: any = async (urlPAginate: any = null) => {
     }
 }
 
-
-
-
 const filterDocument: any = computed(() => {
     if (DataDocument.value) {
         return DataDocument.value.filter((item: any) => {
@@ -97,6 +102,15 @@ const filterDocument: any = computed(() => {
         });
     }
 })
+
+const SendMail: any = async (data: any) => {
+    try {
+        await axios.post('/api/send-email-customer/NO', { "company_idnumber": data.identification_number, "prefix": data.prefix, "number": data.number } )
+        alert('envio con exito');
+    } catch (error) {
+        console.log(error)
+    }
+}
 
 
 onMounted(async () => {
@@ -148,14 +162,16 @@ onMounted(async () => {
                 </select>
             </div>
             <div class="w-4/12 max-w-md mx-auto ">
-                <select id="seleccionar" class="block w-full p-2 border border-gray-500 rounded-lg" @change="getDataLogin(paginaSelected)"  v-model="paginaSelected">
-                    <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas" :key="p" v-if="p !== 0">
+                <select id="seleccionar" class="block w-full p-2 border border-gray-500 rounded-lg"
+                    @change="getDataLogin(paginaSelected)" v-model="paginaSelected">
+                    <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas" :key="p"
+                        v-if="p !== 0">
                         Pagina {{ p }}
                     </option>
                 </select>
             </div>
-            
-            <div class="relative flex items-center mt-1 md:mt-0 ">
+
+            <div class="relative w-5/12 flex items-center mt-1 md:mt-0 ">
                 <span class="absolute">
                     <svg class="w-5 h-5 mx-3 text-gray-500 dark:text-gray-600" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -167,6 +183,17 @@ onMounted(async () => {
                     class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-600/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
 
+            <div class="relative flex items-center ">
+                <span class="absolute">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                </span>
+                <input type="text" placeholder="Buscar por prefijo" v-model="varBuscadorPrefix"
+                    class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
+            </div>
             <div class="relative flex items-center ">
                 <span class="absolute">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -313,15 +340,41 @@ onMounted(async () => {
                                             <img :src="FileZipIon" class="w-8 h-8" />
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-center whitespace-nowrap">
-                                        <button
+                                    <td class="px-4 py-4 text-center whitespace-nowrap flex gap-2 flex-col">
+                                        <!-- <button
                                             class="px-1 py-1 text-gray-500 transition-colors duration-200 rounded-lg dark:text-gray-300 hover:bg-gray-100">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                 stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
                                                     d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
                                             </svg>
-                                        </button>
+                                        </button> -->
+                                        <div class="relative">
+                                            <button @click.prevent="SendMail(document)"
+                                                class="group relative h-6 w-28 overflow-hidden rounded-lg bg-white text-xs shadow">
+                                                <div
+                                                    class="absolute inset-0 w-3 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
+                                                </div>
+                                                <span class="relative text-black group-hover:text-white flex gap-1 px-2">
+                                                    <img :src="sendMailIon" class=" w-4 h-4" />
+                                                    <p class=" self-center "> Enviar correo</p>
+                                                </span>
+                                            </button>
+                                        </div>
+
+                                        <div class="relative">
+                                            <button
+                                                class="group relative h-6 w-28 overflow-hidden rounded-lg bg-white text-xs shadow">
+                                                <div
+                                                    class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full">
+                                                </div>
+                                                <span class="relative text-black group-hover:text-white flex gap-1 px-2">
+                                                    <img :src="SendInvoiceIon" class=" w-4 h-4" />
+                                                    <p class=" self-center ">Enviar factura</p>
+                                                </span>
+                                            </button>
+                                        </div>
+
                                     </td>
                                 </tr>
                             </tbody>
