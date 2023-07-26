@@ -136,10 +136,9 @@ const filterDocumentDate: any = computed(() => {
 
 const SendMail: any = async (data: any) => {
     try {
-        // await axios.post('/api/send-email-customer/NO', { "company_idnumber": data.identification_number, "prefix": data.prefix, "number": data.number } )
-        // await getDataLogin(dataLogin.value[1].first_page_url)
-        // alert('envio con exito');
-        console.log({D:dateValue.value})
+        await axios.post('/api/send-email-customer/NO', { "company_idnumber": data.identification_number, "prefix": data.prefix, "number": data.number } )
+        await getDataLogin(dataLogin.value[1].first_page_url)
+        alert('envio con exito');
     } catch (error) {
         console.log(error)
     }
