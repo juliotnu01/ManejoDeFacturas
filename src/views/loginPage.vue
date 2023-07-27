@@ -6,8 +6,8 @@ import axios from 'axios'
 import useLoginStore from '@/stores/loginStore'
 import router from '@/plugins/routes/routes'
 const token: string | null = localStorage.getItem('token')
-axios.defaults.headers.common = { 'Authorization': `bearer af8c7e1b680e5791aa604505d4f04ca3e92505e704587b9a4af594b438ae2cac` }
-axios.defaults.baseURL = 'http://apidian.oo';
+axios.defaults.headers.common = { 'Authorization': `bearer ${token}` }
+axios.defaults.baseURL = 'http://192.168.0.108:8000';
 
 //---------- variables ref---------------------
 /**
@@ -44,6 +44,7 @@ const postLogiun: any = async () => {
     try {
         let { data } = await axios.post('/login-manejo-factura', { email: model.value?.email, password: model.value?.pass })
         localStorage.setItem("token", data.user.api_token)
+        localStorage.setItem("firstPageLogin", data[1].first_page_url)
         localStorage.setItem("user", JSON.stringify({ email: model.value?.email, password: model.value?.pass }))
         dataLogin.value = data
         router.push({name:'Home'})

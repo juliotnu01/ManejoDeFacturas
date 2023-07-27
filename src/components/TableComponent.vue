@@ -7,24 +7,29 @@ import FileXmlIon from '../assets/xml-svgrepo-com.svg'
 import FileZipIon from '../assets/zip-svgrepo-com.svg'
 import sendMailIon from '../assets/send-mail-svgrepo-com.svg'
 import SendInvoiceIon from '../assets/send-svgrepo-com.svg'
-const dateValue: Ref<{startDate: String, endDate: String}> = ref({
-    startDate: '',
-    endDate: ''
-})
-const DataDocument: Ref<Array<object> | null> = ref(null)
+import moment from "moment";
 import useLoginStore from '@/stores/loginStore'
 import axios from "axios";
-axios.defaults.baseURL = 'http://apidian.oo';
+axios.defaults.baseURL = 'http://192.168.0.108:8000';
 
 
+const DataDocument: Ref<Array<object> | null> = ref(null)
 const varBuscadorNormal: Ref<String | null> = ref('');
 const varBuscadorPrefix: Ref<String | null> = ref('');
 const varBuscadorCliente: Ref<String | null> = ref('');
 const pagination: Ref<any | null> = ref({});
 const store: any = useLoginStore()
-
+const dateValue: Ref<{startDate: String, endDate: String}> = ref({
+    startDate: moment(new Date()).startOf('month').format('YYYY-MM-DD HH:mm:ss'),
+    endDate: moment(new Date()).endOf('month').format('YYYY-MM-DD HH:mm:ss')
+})
 const OpcionesPaginas: any = ref([])
 const paginaSelected: Ref<String> = ref('')
+const itemPerPageSelected: Ref<String> = ref('10')
+const firstPageLogin: Ref<String> = ref(localStorage.getItem('firstPageLogin'))
+
+const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "25", "50", "100", "1000"])
+const varSelectedStatusDocument: Ref<String> = ref("ACEPTADA")
 
 
 //---------- variables computed---------------------
@@ -41,6 +46,64 @@ const dataLogin: any = computed({
         store.setDataLogin(val)
     }
 });
+const filterDocument: any = computed(() => {
+    if (DataDocument.value) {
+        return DataDocument.value.filter((item: any) => {
+            const searchTerm = varBuscadorNormal.value?.toLowerCase();
+            const numberMatches = item.number.toLowerCase().includes(searchTerm);
+            return numberMatches ;
+        });
+    }
+})
+const filterDocumentPrefix: any = computed(() => {
+    if (DataDocument.value) {
+        return filterDocument.value.filter((item: any) => {
+            const searchTerm = varBuscadorPrefix.value?.toLowerCase();
+            const prefixMatches = item.prefix.toLowerCase().includes(searchTerm);
+            return prefixMatches;
+        });
+    }
+})
+const filterDocumentCliente: any = computed(() => {
+    if (DataDocument.value) {
+        return filterDocumentPrefix.value.filter((item: any) => {
+            const searchTerm = varBuscadorCliente.value?.toLowerCase();
+            if(item.client && item.client != ''){
+                const clienteMatches = JSON.parse(item.client).name.toLowerCase().includes(searchTerm);
+                const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
+                return clienteMatches || clienteNumberMatches;
+            }else{
+                const clienteMatches = ''
+                const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
+                return clienteMatches || clienteNumberMatches;
+            }
+        });
+    }
+})
+
+const filterStatusDocument: any = computed(() => {
+    if (DataDocument.value) {
+        return filterDocumentCliente.value.filter((item: any) => {
+            const statusDocument = item.state_document_id;
+            if (varSelectedStatusDocument.value === "ACEPTADA") {
+                return statusDocument === 1; // Filtrar solo cuando el estado sea 1 (aceptada)
+            } else {
+                return statusDocument === 0; // Filtrar solo cuando el estado sea 0 (no aceptada)
+            }
+        });
+    }
+});
+
+const filterDocumentDate: any = computed(() => {
+    if (DataDocument.value) {
+        return filterStatusDocument.value.filter((item: any) => {
+            const startDate = dateValue.value.startDate.substring(0,10).toLowerCase();
+            const endDate = dateValue.value.endDate.substring(0,10).toLowerCase();
+            const documentDate = item.created_at.substring(0, 10).toLowerCase();
+            return documentDate >= startDate && documentDate <= endDate;
+        });
+    }
+})
 
 //---------- metodos---------------------
 
@@ -83,55 +146,18 @@ const getDataLogin: any = async (urlPAginate: any = null) => {
     try {
         var dataL: any = localStorage.getItem('user')
         var model = JSON.parse(dataL)
-        let { data } = await axios.post(urlPAginate, { email: model.email, password: model.password })
+        let { data } = await axios.post(`${urlPAginate}&itemPerPage=${itemPerPageSelected.value}`, { email: model.email, password: model.password })
         DataDocument.value = data[0]
         pagination.value = data[1]
-        GenerateOpcionDePaginas(pagination.value?.last_page_url)
+        localStorage.setItem("token", data.user.api_token)
+        localStorage.setItem("firstPageLogin", dataLogin.value[1].first_page_url)
+        dataLogin.value = data
+        OpcionesPaginas.value = [];
+        GenerateOpcionDePaginas(data[1].last_page_url)
     } catch (error) {
         console.log(error)
     }
 }
-const filterDocument: any = computed(() => {
-    if (DataDocument.value) {
-        return DataDocument.value.filter((item: any) => {
-            const searchTerm = varBuscadorNormal.value?.toLowerCase();
-            const numberMatches = item.number.toLowerCase().includes(searchTerm);
-            return numberMatches ;
-        });
-    }
-})
-const filterDocumentPrefix: any = computed(() => {
-    if (DataDocument.value) {
-        return filterDocument.value.filter((item: any) => {
-            const searchTerm = varBuscadorPrefix.value?.toLowerCase();
-            const prefixMatches = item.prefix.toLowerCase().includes(searchTerm);
-            return prefixMatches;
-        });
-    }
-})
-const filterDocumentCliente: any = computed(() => {
-    if (DataDocument.value) {
-        return filterDocumentPrefix.value.filter((item: any) => {
-            const searchTerm = varBuscadorCliente.value?.toLowerCase();
-            const clienteMatches = JSON.parse(item.client).name.toLowerCase().includes(searchTerm);
-            const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
-            return clienteMatches || clienteNumberMatches;
-        });
-    }
-})
-const filterDocumentDate: any = computed(() => {
-    if (DataDocument.value) {
-        return filterDocumentCliente.value.filter((item: any) => {
-            const startDate = dateValue.value.startDate.substring(0,10).toLowerCase();
-            const endDate = dateValue.value.endDate.substring(0,10).toLowerCase();
-            const documentDate = item.created_at.substring(0, 10).toLowerCase();
-
-            // Compare the documentDate with the start and end dates
-            return documentDate >= startDate && documentDate <= endDate;
-        });
-    }
-})
-
 const SendMail: any = async (data: any) => {
     try {
         await axios.post('/api/send-email-customer/NO', { "company_idnumber": data.identification_number, "prefix": data.prefix, "number": data.number } )
@@ -152,7 +178,14 @@ const SendInvoice: any = async (data: any) => {
 
 
 onMounted(async () => {
-    getDataLogin(dataLogin.value[1].first_page_url)
+    if(localStorage.getItem('token') != null && Object.entries(dataLogin.value).length > 0){
+        
+        getDataLogin(dataLogin.value[1].first_page_url)
+    }else{
+        
+        getDataLogin('/login-manejo-factura')
+    }
+    
 })
 </script>
 
@@ -187,22 +220,31 @@ onMounted(async () => {
             </div>
         </div>
 
-        <div class="flex items-center gap-3 mt-1 ">
-
-            <vue-tailwind-datepicker v-model="dateValue" 
-                class="border border-gray-400 rounded-lg w-96 placeholder-gray-600/70 "
-                placeholder="Seleccionar rango de fechas" />
-
-            <div class="w-4/12 max-w-md mx-auto ">
-                <select id="seleccionar" class="block w-full p-2 border border-gray-500 rounded-lg"
+        <div class="items-center w-full mt-1 flex gap-2 ">
+            <div class="max-w-md mx-auto  w-2/12">
+                <select id="seleccionar" class="block  p-2 border border-gray-500 rounded-lg"
+                    @change="getDataLogin(firstPageLogin)" v-model="itemPerPageSelected">
+                    <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in varitemPerPage" :key="p">
+                        {{ pagina }}
+                    </option>
+                </select>
+            </div>
+            <div class="max-w-md mx-auto  w-2/12">
+                <select id="seleccionar" class="block  p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(paginaSelected)" v-model="paginaSelected">
                     <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas" :key="p">
                         Pagina {{ p }}
                     </option>
                 </select>
             </div>
-
-            <div class="relative w-5/12 flex items-center mt-1 md:mt-0 ">
+            <div class="max-w-md mx-auto w-2/12">
+                <select id="seleccionar" class="block  p-2 border border-gray-500 rounded-lg" v-model="varSelectedStatusDocument" >
+                    <option value="ACEPTADA" class="text-white bg-green-700">ACEPTADA</option>
+                    <option value="POR ENVIAR" class="text-white bg-red-700">POR ENVIAR</option>
+                </select>
+            </div>
+            <vue-tailwind-datepicker v-model="dateValue" class="h-[38px] border border-gray-500 rounded-lg  placeholder-gray-600/70 " placeholder="Seleccionar rango de fechas" />
+            <div class="relative flex items-center mt-1 md:mt-0 w-2/12">
                 <span class="absolute">
                     <svg class="w-5 h-5 mx-3 text-gray-500 dark:text-gray-600" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -213,8 +255,7 @@ onMounted(async () => {
                 <input type="text" placeholder="Buscar por cliente" v-model="varBuscadorCliente"
                     class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-600/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
-
-            <div class="relative flex items-center ">
+            <div class="relative flex items-center w-2/12">
                 <span class="absolute">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600">
@@ -223,9 +264,9 @@ onMounted(async () => {
                     </svg>
                 </span>
                 <input type="text" placeholder="Buscar por prefijo" v-model="varBuscadorPrefix"
-                    class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
+                    class="block  py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
-            <div class="relative flex items-center ">
+            <div class="relative flex items-center w-2/12">
                 <span class="absolute">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600">
@@ -234,7 +275,7 @@ onMounted(async () => {
                     </svg>
                 </span>
                 <input type="text" placeholder="Buscar por documento" v-model="varBuscadorNormal"
-                    class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
+                    class="block py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
 
         </div>
@@ -281,7 +322,7 @@ onMounted(async () => {
                                         <div class="ml-5">
                                             <div
                                                 class="relative flex items-center justify-center flex-shrink-0 w-5 h-5 bg-gray-200 rounded-sm">
-                                                <input placeholder="checkbox" checked="" type="checkbox"
+                                                <input placeholder="checkbox"  type="checkbox"
                                                     class="absolute w-full h-full opacity-0 cursor-pointer focus:opacity-100 checkbox" />
                                                 <div class="hidden text-white bg-indigo-700 rounded-sm check-icon">
                                                     <svg class="icon icon-tabler icon-tabler-check"
