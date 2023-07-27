@@ -7,7 +7,9 @@ import useLoginStore from '@/stores/loginStore'
 import router from '@/plugins/routes/routes'
 const token: string | null = localStorage.getItem('token')
 axios.defaults.headers.common = { 'Authorization': `bearer ${token}` }
-axios.defaults.baseURL = 'http://192.168.0.108:8000';
+// Acceder a la URL de la API
+const apiUrl: string = import.meta.env.VITE_API_URL;
+axios.defaults.baseURL = apiUrl;
 
 //---------- variables ref---------------------
 /**
@@ -52,7 +54,6 @@ const postLogiun: any = async () => {
         console.log({ error })
     }
 }
-
 
 
 </script>

@@ -10,7 +10,8 @@ import SendInvoiceIon from '../assets/send-svgrepo-com.svg'
 import moment from "moment";
 import useLoginStore from '@/stores/loginStore'
 import axios from "axios";
-axios.defaults.baseURL = 'http://192.168.0.108:8000';
+const apiUrl: string = import.meta.env.VITE_API_URL;
+axios.defaults.baseURL = apiUrl;
 
 
 const DataDocument: Ref<Array<object> | null> = ref(null)
@@ -146,7 +147,7 @@ const getDataLogin: any = async (urlPAginate: any = null) => {
     try {
         var dataL: any = localStorage.getItem('user')
         var model = JSON.parse(dataL)
-        let { data } = await axios.post(`${urlPAginate}&itemPerPage=${itemPerPageSelected.value}`, { email: model.email, password: model.password })
+        let { data } = await axios.post(`${urlPAginate}&itemPerPage=${itemPerPageSelected.value}&aceptada=${varSelectedStatusDocument.value}&created_start=${dateValue.value.startDate}&created_end=${dateValue.value.endDate}&cliente=${varBuscadorCliente.value}&prefijo=${varBuscadorPrefix.value}&documento=${varBuscadorNormal.value}`, { email: model.email, password: model.password })
         DataDocument.value = data[0]
         pagination.value = data[1]
         localStorage.setItem("token", data.user.api_token)
@@ -238,7 +239,7 @@ onMounted(async () => {
                 </select>
             </div>
             <div class="max-w-md mx-auto w-2/12">
-                <select id="seleccionar" class="block  p-2 border border-gray-500 rounded-lg" v-model="varSelectedStatusDocument" >
+                <select @change="getDataLogin(firstPageLogin)" id="seleccionar" class="block  p-2 border border-gray-500 rounded-lg" v-model="varSelectedStatusDocument" >
                     <option value="ACEPTADA" class="text-white bg-green-700">ACEPTADA</option>
                     <option value="POR ENVIAR" class="text-white bg-red-700">POR ENVIAR</option>
                 </select>
@@ -252,7 +253,7 @@ onMounted(async () => {
                         </path>
                     </svg>
                 </span>
-                <input type="text" placeholder="Buscar por cliente" v-model="varBuscadorCliente"
+                <input @change="getDataLogin(firstPageLogin)"  type="text" placeholder="Buscar por cliente" v-model="varBuscadorCliente"
                     class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-600/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
             <div class="relative flex items-center w-2/12">
@@ -263,7 +264,7 @@ onMounted(async () => {
                             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
                 </span>
-                <input type="text" placeholder="Buscar por prefijo" v-model="varBuscadorPrefix"
+                <input  @change="getDataLogin(firstPageLogin)"  type="text" placeholder="Buscar por prefijo" v-model="varBuscadorPrefix"
                     class="block  py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
             <div class="relative flex items-center w-2/12">
@@ -274,7 +275,7 @@ onMounted(async () => {
                             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
                 </span>
-                <input type="text" placeholder="Buscar por documento" v-model="varBuscadorNormal"
+                <input @change="getDataLogin(firstPageLogin)"  type="text" placeholder="Buscar por documento" v-model="varBuscadorNormal"
                     class="block py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
 
@@ -427,13 +428,10 @@ onMounted(async () => {
                                         </div>
 
                                         <div class="relative">
-                                            <button
-                                                @click.prevent="SendInvoice(JSON.parse(document.request_api))"
-                                                class="group relative h-6 w-28 overflow-hidden rounded-lg bg-white text-xs shadow">
-                                                <div
-                                                    class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full">
-                                                </div>
-                                                <span class="relative text-black group-hover:text-white flex gap-1 px-2">
+                                            <button :disabled="document.state_document_id === 1" @click.prevent="SendInvoice(JSON.parse(document.request_api))" class="group relative h-6 w-28 overflow-hidden rounded-lg bg-white text-xs shadow">
+                                                <div :class="{'absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full': document.state_document_id == 0, 
+                                                              'absolute inset-0 bg-gray-400 transition-all duration-[250ms] ease-out w-full': document.state_document_id == 1}" />
+                                                <span :class="{'relative text-black group-hover:text-white flex gap-1 px-2': document.state_document_id == 0 , 'relative text-white flex gap-1 px-2': document.state_document_id == 1}">
                                                     <img :src="SendInvoiceIon" class=" w-4 h-4" />
                                                     <p class=" self-center ">Enviar factura</p>
                                                 </span>
