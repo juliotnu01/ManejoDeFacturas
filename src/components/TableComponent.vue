@@ -12,6 +12,8 @@ import useLoginStore from '@/stores/loginStore'
 import axios from "axios";
 const apiUrl: string = import.meta.env.VITE_API_URL;
 axios.defaults.baseURL = apiUrl;
+const token: string | null = localStorage.getItem('token')
+axios.defaults.headers.common = { 'Authorization': `bearer ${token}` }
 
 
 const DataDocument: Ref<Array<object> | null> = ref(null)
@@ -170,6 +172,7 @@ const SendMail: any = async (data: any) => {
 }
 const SendInvoice: any = async (data: any) => {
     try {
+        console.log(JSON.stringify(data))
         await axios.post('/api/ubl2.1/invoice', data )
         alert('envio con exito');
     } catch (error) {
