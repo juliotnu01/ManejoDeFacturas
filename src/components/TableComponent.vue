@@ -175,18 +175,31 @@ const SendInvoice: any = async (data: any, type: any ) => {
         if(type == 1 || type == 2 || type == 3 || type == 12)
         {
             let dataSend = await axios.post('/api/ubl2.1/invoice', data )
-            alert(`${dataSend.data.message} <br/> ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.ErrorMessage : ''}`)
+            alert(`
+                        ${dataSend.data.message} 
+                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.string : ''} 
+                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.StatusMessage : ''}`)
         }else if(type == 4){
             let dataSend =  await axios.post('/api/ubl2.1/credit-note', data )
-            alert(`${dataSend.data.message} <br/> ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.ErrorMessage : ''}`)
+            alert(`
+                        ${dataSend.data.message} 
+                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.string : ''} 
+                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.StatusMessage : ''}`)
         }else if(type == 5){
             let dataSend =  await axios.post('/api/ubl2.1/debit-note', data )
-            alert(`${dataSend.data.message} <br/> ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.ErrorMessage : ''}`)
+            alert(`
+                        ${dataSend.data.message} 
+                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.string : ''} 
+                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.StatusMessage : ''}`)
         }else if(type == 11){
             let dataSend =  await axios.post('/api/ubl2.1/support-document', data )
-            alert(`${dataSend.data.message} <br/> ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.ErrorMessage : ''}`)
+            alert(`
+                        ${dataSend.data.message} 
+                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.string : ''} 
+                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.StatusMessage : ''}`)
         }
         alert('envio con exito');
+        getDataLogin(firstPageLogin)
     } catch (error) {
         console.log(error)
     }
