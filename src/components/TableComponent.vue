@@ -13,7 +13,7 @@ import axios from "axios";
 const apiUrl: string = import.meta.env.VITE_API_URL;
 axios.defaults.baseURL = apiUrl;
 const token: string | null = localStorage.getItem('token')
-axios.defaults.headers.common = { 'Authorization': `bearer ${token}` }
+axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` }
 
 
 const DataDocument: Ref<Array<object> | null> = ref(null)
@@ -170,10 +170,22 @@ const SendMail: any = async (data: any) => {
         console.log(error)
     }
 }
-const SendInvoice: any = async (data: any) => {
+const SendInvoice: any = async (data: any, type: any ) => {
     try {
-        console.log(JSON.stringify(data))
-        await axios.post('/api/ubl2.1/invoice', data )
+        if(type == 1 || type == 2 || type == 3 || type == 12)
+        {
+            let dataSend = await axios.post('/api/ubl2.1/invoice', data )
+            alert(`${dataSend.data.message} <br/> ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.ErrorMessage : ''}`)
+        }else if(type == 4){
+            let dataSend =  await axios.post('/api/ubl2.1/credit-note', data )
+            alert(`${dataSend.data.message} <br/> ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.ErrorMessage : ''}`)
+        }else if(type == 5){
+            let dataSend =  await axios.post('/api/ubl2.1/debit-note', data )
+            alert(`${dataSend.data.message} <br/> ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.ErrorMessage : ''}`)
+        }else if(type == 11){
+            let dataSend =  await axios.post('/api/ubl2.1/support-document', data )
+            alert(`${dataSend.data.message} <br/> ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.ErrorMessage : ''}`)
+        }
         alert('envio con exito');
     } catch (error) {
         console.log(error)
@@ -304,6 +316,9 @@ onMounted(async () => {
                                 <th scope="col" class="px-12 font-normal text-center text-white ">
                                     Documento
                                 </th>
+                                <th scope="col" class="px-12 font-normal text-center text-white ">
+                                    Tipo
+                                </th>
 
                                 <th scope="col" class="px-12 font-normal text-center text-white ">
                                     Estado
@@ -361,6 +376,19 @@ onMounted(async () => {
                                     <td class="px-4 py-4 text-center whitespace-nowrap">
                                         <div>
                                             <p class="font-bold text-gray-900 ">{{ document.prefix }}{{ document.number }}
+                                            </p>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4 text-center whitespace-nowrap">
+                                        <div>
+                                            <p class="font-bold text-gray-900 ">
+                                                {{  document.type_document_id == 1 ? 'Factura de venta nacional' :   
+                                                    document.type_document_id == 2 ? 'Factura de Exportacion': 
+                                                    document.type_document_id == 3 ? 'Factura de contingencia' : 
+                                                    document.type_document_id == 4 ? 'Nota de credito' : 
+                                                    document.type_document_id == 5 ? 'Nota de debito' : 
+                                                    document.type_document_id == 11 ? 'Documento sopoerte electronico' : 
+                                                    document.type_document_id == 12 ? 'Factura electronica de venta tipo - 04': ''}}
                                             </p>
                                         </div>
                                     </td>
@@ -431,12 +459,12 @@ onMounted(async () => {
                                         </div>
 
                                         <div class="relative">
-                                            <button :disabled="document.state_document_id === 1" @click.prevent="SendInvoice(JSON.parse(document.request_api))" class="group relative h-6 w-28 overflow-hidden rounded-lg bg-white text-xs shadow">
+                                            <button :disabled="document.state_document_id === 1" @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id)" class="group relative h-6 w-28 overflow-hidden rounded-lg bg-white text-xs shadow">
                                                 <div :class="{'absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full': document.state_document_id == 0, 
                                                               'absolute inset-0 bg-gray-400 transition-all duration-[250ms] ease-out w-full': document.state_document_id == 1}" />
                                                 <span :class="{'relative text-black group-hover:text-white flex gap-1 px-2': document.state_document_id == 0 , 'relative text-white flex gap-1 px-2': document.state_document_id == 1}">
                                                     <img :src="SendInvoiceIon" class=" w-4 h-4" />
-                                                    <p class=" self-center ">Enviar factura</p>
+                                                    <p class=" self-center ">Enviar</p>
                                                 </span>
                                             </button>
                                         </div>

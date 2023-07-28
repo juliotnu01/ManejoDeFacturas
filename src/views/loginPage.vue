@@ -6,7 +6,7 @@ import axios from 'axios'
 import useLoginStore from '@/stores/loginStore'
 import router from '@/plugins/routes/routes'
 const token: string | null = localStorage.getItem('token')
-axios.defaults.headers.common = { 'Authorization': `bearer ${token}` }
+axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` }
 // Acceder a la URL de la API
 const apiUrl: string = import.meta.env.VITE_API_URL;
 axios.defaults.baseURL = apiUrl;
