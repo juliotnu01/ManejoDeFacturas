@@ -401,13 +401,13 @@ onMounted(async () => {
                                     <td class="px-4 py-4 text-center whitespace-nowrap">
                                         <div>
                                             <p class="font-bold text-gray-900 ">
-                                                {{ document.type_document_id == 1 ? 'Factura de venta nacional' :
-                                                    document.type_document_id == 2 ? 'Factura de Exportacion' :
-                                                        document.type_document_id == 3 ? 'Factura de contingencia' :
-                                                            document.type_document_id == 4 ? 'Nota de credito' :
-                                                                document.type_document_id == 5 ? 'Nota de debito' :
-                                                                    document.type_document_id == 11 ? 'Documento sopoerte electronico' :
-                                                                        document.type_document_id == 12 ? 'Factura electronica de venta tipo - 04' :
+                                                {{ document.type_document_id == 1 ? 'Venta nacional' :
+                                                   document.type_document_id == 2 ? 'Venta Exportacion' :
+                                                   document.type_document_id == 3 ? 'Factura contingencia' :
+                                                   document.type_document_id == 4 ? 'Nota credito' :
+                                                   document.type_document_id == 5 ? 'Nota debito' :
+                                                   document.type_document_id == 11 ? 'Documento soporte' :
+                                                   document.type_document_id == 12 ? 'Factura venta tipo - 04' :
                                                                             '' }}
                                             </p>
                                         </div>
