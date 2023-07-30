@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, ref, onMounted, computed } from "vue";
+import { Ref, ref, onMounted, computed, watch } from "vue";
 import VueTailwindDatepicker from 'vue-tailwind-datepicker'
 import calendarIon from '../assets/calendar.svg'
 import FilePdfIon from '../assets/pdf-svgrepo-com.svg'
@@ -107,6 +107,12 @@ const filterDocumentDate: any = computed(() => {
             return documentDate >= startDate && documentDate <= endDate;
         });
     }
+})
+
+
+watch(dateValue, (newX: any) => {
+    getDataLogin(firstPageLogin.value)
+    console.log(newX)
 })
 
 //---------- metodos---------------------
@@ -269,7 +275,7 @@ onMounted(async () => {
             </div>
             <vue-tailwind-datepicker v-model="dateValue"
                 class="h-[38px] border border-gray-500 rounded-lg  placeholder-gray-600/70 "
-                placeholder="Seleccionar rango de fechas" />
+                placeholder="Seleccionar rango de fechas" @change="onSelectSomething($event)" />
             <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
                 <span class="absolute">
                     <svg class="w-5 h-5 mx-3 text-gray-500 dark:text-gray-600" fill="none" stroke="currentColor"
@@ -528,4 +534,5 @@ onMounted(async () => {
             </button>
         </div>
     </div>
-</section></template>
+    </section>
+</template>
