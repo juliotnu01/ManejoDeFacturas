@@ -67,26 +67,26 @@ const filterDocumentPrefix: any = computed(() => {
         });
     }
 })
-const filterDocumentCliente: any = computed(() => {
-    if (DataDocument.value) {
-        return filterDocumentPrefix.value.filter((item: any) => {
-            const searchTerm = varBuscadorCliente.value?.toLowerCase();
-            if(item.client && item.client != ''){
-                const clienteMatches = JSON.parse(item.client).name.toLowerCase().includes(searchTerm);
-                const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
-                return clienteMatches || clienteNumberMatches;
-            }else{
-                const clienteMatches = ''
-                const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
-                return clienteMatches || clienteNumberMatches;
-            }
-        });
-    }
-})
+// const filterDocumentCliente: any = computed(() => {
+//     if (DataDocument.value) {
+//         return filterDocumentPrefix.value.filter((item: any) => {
+//             const searchTerm = varBuscadorCliente.value?.toLowerCase();
+//             if(item.client && item.client != ''){
+//                 // const clienteMatches = JSON.parse(item.client).name.toLowerCase().includes(searchTerm);
+//                 // const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
+//                 // return clienteMatches;
+//             }else{
+//                 const clienteMatches = ''
+//                 const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
+//                 return clienteMatches || clienteNumberMatches;
+//             }
+//         });
+//     }
+// })
 
 const filterStatusDocument: any = computed(() => {
     if (DataDocument.value) {
-        return filterDocumentCliente.value.filter((item: any) => {
+        return filterDocumentPrefix.value.filter((item: any) => {
             const statusDocument = item.state_document_id;
             if (varSelectedStatusDocument.value === "ACEPTADA") {
                 return statusDocument === 1; // Filtrar solo cuando el estado sea 1 (aceptada)
