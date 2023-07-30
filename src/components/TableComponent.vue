@@ -72,7 +72,8 @@ const filterDocumentCliente: any = computed(() => {
         return filterDocumentPrefix.value.filter((item: any) => {
             const searchTerm = varBuscadorCliente.value?.toLowerCase();
             if(item.client && item.client != ''){
-                const clienteMatches = JSON.parse(item.client).name.toLowerCase().includes(searchTerm);
+                
+                const clienteMatches = (item.client) ? JSON.parse(item.client).name.toLowerCase().includes(searchTerm): '';
                 const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
                 return clienteMatches || clienteNumberMatches;
             }else{
@@ -249,31 +250,31 @@ onMounted(async () => {
             </div>
         </div>
 
-        <div class="items-center w-full mt-1 flex gap-2 ">
-            <div class="max-w-md mx-auto  w-2/12">
-                <select id="seleccionar" class="block  p-2 border border-gray-500 rounded-lg"
+        <div class="flex items-center w-full gap-2 mt-1 ">
+            <div class="w-2/12 max-w-md mx-auto">
+                <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(firstPageLogin)" v-model="itemPerPageSelected">
                     <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in varitemPerPage" :key="p">
                         {{ pagina }}
                     </option>
                 </select>
             </div>
-            <div class="max-w-md mx-auto  w-2/12">
-                <select id="seleccionar" class="block  p-2 border border-gray-500 rounded-lg"
+            <div class="w-2/12 max-w-md mx-auto">
+                <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(paginaSelected)" v-model="paginaSelected">
                     <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas" :key="p">
                         Pagina {{ p }}
                     </option>
                 </select>
             </div>
-            <div class="max-w-md mx-auto w-2/12">
-                <select @change="getDataLogin(firstPageLogin)" id="seleccionar" class="block  p-2 border border-gray-500 rounded-lg" v-model="varSelectedStatusDocument" >
+            <div class="w-2/12 max-w-md mx-auto">
+                <select @change="getDataLogin(firstPageLogin)" id="seleccionar" class="block p-2 border border-gray-500 rounded-lg" v-model="varSelectedStatusDocument" >
                     <option value="ACEPTADA" class="text-white bg-green-700">ACEPTADA</option>
                     <option value="POR ENVIAR" class="text-white bg-red-700">POR ENVIAR</option>
                 </select>
             </div>
             <vue-tailwind-datepicker v-model="dateValue" class="h-[38px] border border-gray-500 rounded-lg  placeholder-gray-600/70 " placeholder="Seleccionar rango de fechas" />
-            <div class="relative flex items-center mt-1 md:mt-0 w-2/12">
+            <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
                 <span class="absolute">
                     <svg class="w-5 h-5 mx-3 text-gray-500 dark:text-gray-600" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -457,27 +458,27 @@ onMounted(async () => {
                                             <img :src="FileZipIon" class="w-8 h-8" />
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-center whitespace-nowrap flex gap-2 flex-col">
+                                    <td class="flex flex-col gap-2 px-4 py-4 text-center whitespace-nowrap">
                                         <div class="relative">
                                             <button @click.prevent="SendMail(document)"
-                                                class="group relative h-6 w-28 overflow-hidden rounded-lg bg-white text-xs shadow">
+                                                class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow group w-28">
                                                 <div
                                                     class="absolute inset-0 w-3 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
                                                 </div>
-                                                <span class="relative text-black group-hover:text-white flex gap-1 px-2">
-                                                    <img :src="sendMailIon" class=" w-4 h-4" />
-                                                    <p class=" self-center "> Enviar correo</p>
+                                                <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                                    <img :src="sendMailIon" class="w-4 h-4 " />
+                                                    <p class="self-center "> Enviar correo</p>
                                                 </span>
                                             </button>
                                         </div>
 
                                         <div class="relative">
-                                            <button :disabled="document.state_document_id === 1" @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id)" class="group relative h-6 w-28 overflow-hidden rounded-lg bg-white text-xs shadow">
+                                            <button :disabled="document.state_document_id === 1" @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id)" class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow group w-28">
                                                 <div :class="{'absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full': document.state_document_id == 0, 
                                                               'absolute inset-0 bg-gray-400 transition-all duration-[250ms] ease-out w-full': document.state_document_id == 1}" />
                                                 <span :class="{'relative text-black group-hover:text-white flex gap-1 px-2': document.state_document_id == 0 , 'relative text-white flex gap-1 px-2': document.state_document_id == 1}">
-                                                    <img :src="SendInvoiceIon" class=" w-4 h-4" />
-                                                    <p class=" self-center ">Enviar</p>
+                                                    <img :src="SendInvoiceIon" class="w-4 h-4 " />
+                                                    <p class="self-center ">Enviar</p>
                                                 </span>
                                             </button>
                                         </div>
