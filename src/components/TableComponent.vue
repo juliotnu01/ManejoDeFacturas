@@ -10,6 +10,8 @@ import SendInvoiceIon from '../assets/send-svgrepo-com.svg'
 import moment from "moment";
 import useLoginStore from '@/stores/loginStore'
 import axios from "axios";
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 const apiUrl: string = import.meta.env.VITE_API_URL;
 axios.defaults.baseURL = apiUrl;
 const token: string | null = localStorage.getItem('token')
@@ -181,35 +183,36 @@ const SendInvoice: any = async (data: any, type: any) => {
     try {
         if (type == 1 || type == 2 || type == 3 || type == 12) {
             let dataSend = await axios.post('/api/ubl2.1/invoice', data)
-            console.log()
-            alert(`
-                        ${dataSend.data.message} 
-                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''} 
-                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}`)
+            notify( `<p style="font-size: 9px" >${dataSend.data.message}</p>`)
+            notify(` <p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p>`)
+            notify(` <p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
+            
         } else if (type == 4) {
             let dataSend = await axios.post('/api/ubl2.1/credit-note', data)
-            alert(`
-                        ${dataSend.data.message} 
-                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''} 
-                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}`)
+            notify( `<p style="font-size: 9px" >${dataSend.data.message}</p>`)
+            notify(` <p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p>`)
+            notify(` <p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
         } else if (type == 5) {
             let dataSend = await axios.post('/api/ubl2.1/debit-note', data)
-            alert(`
-                        ${dataSend.data.message} 
-                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''} 
-                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}`)
+            notify( `<p style="font-size: 9px" >${dataSend.data.message}</p>`)
+            notify(` <p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p>`)
+            notify(` <p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
         } else if (type == 11) {
             let dataSend = await axios.post('/api/ubl2.1/support-document', data)
-            alert(`
-                        ${dataSend.data.message} 
-                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''} 
-                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}`)
+            notify( `<p style="font-size: 9px" >${dataSend.data.message}</p>`)
+            notify(` <p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p>`)
+            notify(` <p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
         }
         
         getDataLogin(firstPageLogin)
     } catch (error) {
         console.log(error)
     }
+}
+
+const notify: any = (message: any) => { 
+
+    toast(message, { autoClose: false, dangerouslyHTMLString: true}); // ToastOptions
 }
 
 onMounted(async () => {
