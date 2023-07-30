@@ -22,14 +22,14 @@ const varBuscadorPrefix: Ref<String | null> = ref('');
 const varBuscadorCliente: Ref<String | null> = ref('');
 const pagination: Ref<any | null> = ref({});
 const store: any = useLoginStore()
-const dateValue: Ref<{startDate: String, endDate: String}> = ref({
+const dateValue: Ref<{ startDate: String, endDate: String }> = ref({
     startDate: moment(new Date()).startOf('month').format('YYYY-MM-DD HH:mm:ss'),
     endDate: moment(new Date()).endOf('month').format('YYYY-MM-DD HH:mm:ss')
 })
 const OpcionesPaginas: any = ref([])
 const paginaSelected: Ref<String> = ref('')
 const itemPerPageSelected: Ref<String> = ref('10')
-const firstPageLogin: Ref<String> = ref(localStorage.getItem('firstPageLogin'))
+const firstPageLogin: Ref<any> = ref(localStorage.getItem('firstPageLogin'))
 
 const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "25", "50", "100", "1000"])
 const varSelectedStatusDocument: Ref<String> = ref("ACEPTADA")
@@ -54,7 +54,7 @@ const filterDocument: any = computed(() => {
         return DataDocument.value.filter((item: any) => {
             const searchTerm = varBuscadorNormal.value?.toLowerCase();
             const numberMatches = item.number.toLowerCase().includes(searchTerm);
-            return numberMatches ;
+            return numberMatches;
         });
     }
 })
@@ -71,12 +71,12 @@ const filterDocumentCliente: any = computed(() => {
     if (DataDocument.value) {
         return filterDocumentPrefix.value.filter((item: any) => {
             const searchTerm = varBuscadorCliente.value?.toLowerCase();
-            if(item.client && item.client != ''){
-                
-                const clienteMatches = (item.client) ? JSON.parse(item.client).name.toLowerCase().includes(searchTerm): '';
+            if (item.client && item.client != '') {
+
+                const clienteMatches = (item.client) ? JSON.parse(item.client).name.toLowerCase().includes(searchTerm) : '';
                 const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
                 return clienteMatches || clienteNumberMatches;
-            }else{
+            } else {
                 const clienteMatches = ''
                 const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
                 return clienteMatches || clienteNumberMatches;
@@ -87,7 +87,7 @@ const filterDocumentCliente: any = computed(() => {
 
 const filterStatusDocument: any = computed(() => {
     if (DataDocument.value) {
-        return filterDocumentPrefix.value.filter((item: any) => {
+        return filterDocumentCliente.value.filter((item: any) => {
             const statusDocument = item.state_document_id;
             if (varSelectedStatusDocument.value === "ACEPTADA") {
                 return statusDocument === 1; // Filtrar solo cuando el estado sea 1 (aceptada)
@@ -101,8 +101,8 @@ const filterStatusDocument: any = computed(() => {
 const filterDocumentDate: any = computed(() => {
     if (DataDocument.value) {
         return filterStatusDocument.value.filter((item: any) => {
-            const startDate = dateValue.value.startDate.substring(0,10).toLowerCase();
-            const endDate = dateValue.value.endDate.substring(0,10).toLowerCase();
+            const startDate = dateValue.value.startDate.substring(0, 10).toLowerCase();
+            const endDate = dateValue.value.endDate.substring(0, 10).toLowerCase();
             const documentDate = item.created_at.substring(0, 10).toLowerCase();
             return documentDate >= startDate && documentDate <= endDate;
         });
@@ -154,7 +154,7 @@ const getDataLogin: any = async (urlPAginate: any = null) => {
         DataDocument.value = data[0]
         pagination.value = data[1]
         localStorage.setItem("token", data.user.api_token)
-        localStorage.setItem("firstPageLogin", dataLogin.value[1].first_page_url)
+        localStorage.setItem("firstPageLogin", data[1].first_page_url)
         dataLogin.value = data
         OpcionesPaginas.value = [];
         GenerateOpcionDePaginas(data[1].last_page_url)
@@ -164,40 +164,39 @@ const getDataLogin: any = async (urlPAginate: any = null) => {
 }
 const SendMail: any = async (data: any) => {
     try {
-        await axios.post('/api/send-email-customer/NO', { "company_idnumber": data.identification_number, "prefix": data.prefix, "number": data.number } )
+        await axios.post('/api/send-email-customer/NO', { "company_idnumber": data.identification_number, "prefix": data.prefix, "number": data.number })
         await getDataLogin(dataLogin.value[1].first_page_url)
         alert('envio con exito');
     } catch (error) {
         console.log(error)
     }
 }
-const SendInvoice: any = async (data: any, type: any ) => {
+const SendInvoice: any = async (data: any, type: any) => {
     try {
-        if(type == 1 || type == 2 || type == 3 || type == 12)
-        {
-            let dataSend = await axios.post('/api/ubl2.1/invoice', data )
+        if (type == 1 || type == 2 || type == 3 || type == 12) {
+            let dataSend = await axios.post('/api/ubl2.1/invoice', data)
             alert(`
                         ${dataSend.data.message} 
-                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.string : ''} 
-                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.StatusMessage : ''}`)
-        }else if(type == 4){
-            let dataSend =  await axios.post('/api/ubl2.1/credit-note', data )
+                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.string : ''} 
+                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.StatusMessage : ''}`)
+        } else if (type == 4) {
+            let dataSend = await axios.post('/api/ubl2.1/credit-note', data)
             alert(`
                         ${dataSend.data.message} 
-                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.string : ''} 
-                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.StatusMessage : ''}`)
-        }else if(type == 5){
-            let dataSend =  await axios.post('/api/ubl2.1/debit-note', data )
+                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.string : ''} 
+                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.StatusMessage : ''}`)
+        } else if (type == 5) {
+            let dataSend = await axios.post('/api/ubl2.1/debit-note', data)
             alert(`
                         ${dataSend.data.message} 
-                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.string : ''} 
-                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.StatusMessage : ''}`)
-        }else if(type == 11){
-            let dataSend =  await axios.post('/api/ubl2.1/support-document', data )
+                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.string : ''} 
+                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.StatusMessage : ''}`)
+        } else if (type == 11) {
+            let dataSend = await axios.post('/api/ubl2.1/support-document', data)
             alert(`
                         ${dataSend.data.message} 
-                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.string : ''} 
-                    --- ${  dataSend.data.ResponseDian ?   dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.StatusMessage : ''}`)
+                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.ErrorMessage.string : ''} 
+                    --- ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResult.StatusMessage : ''}`)
         }
         alert('envio con exito');
         getDataLogin(firstPageLogin)
@@ -206,16 +205,10 @@ const SendInvoice: any = async (data: any, type: any ) => {
     }
 }
 
-
 onMounted(async () => {
-    if(localStorage.getItem('token') != null && Object.entries(dataLogin.value).length > 0){
-        
-        getDataLogin(dataLogin.value[1].first_page_url)
-    }else{
-        
-        getDataLogin('/login-manejo-factura')
-    }
-    
+
+    getDataLogin(firstPageLogin.value)
+
 })
 </script>
 
@@ -268,12 +261,15 @@ onMounted(async () => {
                 </select>
             </div>
             <div class="w-2/12 max-w-md mx-auto">
-                <select @change="getDataLogin(firstPageLogin)" id="seleccionar" class="block p-2 border border-gray-500 rounded-lg" v-model="varSelectedStatusDocument" >
+                <select @change="getDataLogin(firstPageLogin)" id="seleccionar"
+                    class="block p-2 border border-gray-500 rounded-lg" v-model="varSelectedStatusDocument">
                     <option value="ACEPTADA" class="text-white bg-green-700">ACEPTADA</option>
                     <option value="POR ENVIAR" class="text-white bg-red-700">POR ENVIAR</option>
                 </select>
             </div>
-            <vue-tailwind-datepicker v-model="dateValue" class="h-[38px] border border-gray-500 rounded-lg  placeholder-gray-600/70 " placeholder="Seleccionar rango de fechas" />
+            <vue-tailwind-datepicker v-model="dateValue"
+                class="h-[38px] border border-gray-500 rounded-lg  placeholder-gray-600/70 "
+                placeholder="Seleccionar rango de fechas" />
             <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
                 <span class="absolute">
                     <svg class="w-5 h-5 mx-3 text-gray-500 dark:text-gray-600" fill="none" stroke="currentColor"
@@ -282,7 +278,8 @@ onMounted(async () => {
                         </path>
                     </svg>
                 </span>
-                <input @change="getDataLogin(firstPageLogin)"  type="text" placeholder="Buscar por cliente" v-model="varBuscadorCliente"
+                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por cliente"
+                    v-model="varBuscadorCliente"
                     class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-600/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
             <div class="relative flex items-center w-2/12">
@@ -293,7 +290,8 @@ onMounted(async () => {
                             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
                 </span>
-                <input  @change="getDataLogin(firstPageLogin)"  type="text" placeholder="Buscar por prefijo" v-model="varBuscadorPrefix"
+                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por prefijo"
+                    v-model="varBuscadorPrefix"
                     class="block  py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
             <div class="relative flex items-center w-2/12">
@@ -304,7 +302,8 @@ onMounted(async () => {
                             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
                 </span>
-                <input @change="getDataLogin(firstPageLogin)"  type="text" placeholder="Buscar por documento" v-model="varBuscadorNormal"
+                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por documento"
+                    v-model="varBuscadorNormal"
                     class="block py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
 
@@ -355,7 +354,7 @@ onMounted(async () => {
                                         <div class="ml-5">
                                             <div
                                                 class="relative flex items-center justify-center flex-shrink-0 w-5 h-5 bg-gray-200 rounded-sm">
-                                                <input placeholder="checkbox"  type="checkbox"
+                                                <input placeholder="checkbox" type="checkbox"
                                                     class="absolute w-full h-full opacity-0 cursor-pointer focus:opacity-100 checkbox" />
                                                 <div class="hidden text-white bg-indigo-700 rounded-sm check-icon">
                                                     <svg class="icon icon-tabler icon-tabler-check"
@@ -396,13 +395,14 @@ onMounted(async () => {
                                     <td class="px-4 py-4 text-center whitespace-nowrap">
                                         <div>
                                             <p class="font-bold text-gray-900 ">
-                                                {{  document.type_document_id == 1 ? 'Factura de venta nacional' :   
-                                                    document.type_document_id == 2 ? 'Factura de Exportacion': 
-                                                    document.type_document_id == 3 ? 'Factura de contingencia' : 
-                                                    document.type_document_id == 4 ? 'Nota de credito' : 
-                                                    document.type_document_id == 5 ? 'Nota de debito' : 
-                                                    document.type_document_id == 11 ? 'Documento sopoerte electronico' : 
-                                                    document.type_document_id == 12 ? 'Factura electronica de venta tipo - 04': ''}}
+                                                {{ document.type_document_id == 1 ? 'Factura de venta nacional' :
+                                                    document.type_document_id == 2 ? 'Factura de Exportacion' :
+                                                        document.type_document_id == 3 ? 'Factura de contingencia' :
+                                                            document.type_document_id == 4 ? 'Nota de credito' :
+                                                                document.type_document_id == 5 ? 'Nota de debito' :
+                                                                    document.type_document_id == 11 ? 'Documento sopoerte electronico' :
+                                                                        document.type_document_id == 12 ? 'Factura electronica de venta tipo - 04' :
+                                                                            '' }}
                                             </p>
                                         </div>
                                     </td>
@@ -473,10 +473,16 @@ onMounted(async () => {
                                         </div>
 
                                         <div class="relative">
-                                            <button :disabled="document.state_document_id === 1" @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id)" class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow group w-28">
-                                                <div :class="{'absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full': document.state_document_id == 0, 
-                                                              'absolute inset-0 bg-gray-400 transition-all duration-[250ms] ease-out w-full': document.state_document_id == 1}" />
-                                                <span :class="{'relative text-black group-hover:text-white flex gap-1 px-2': document.state_document_id == 0 , 'relative text-white flex gap-1 px-2': document.state_document_id == 1}">
+                                            <button :disabled="document.state_document_id === 1"
+                                                @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id)"
+                                                class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow group w-28">
+                                                <div
+                                                    :class="{
+                                                        'absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full': document.state_document_id == 0,
+                                                        'absolute inset-0 bg-gray-400 transition-all duration-[250ms] ease-out w-full': document.state_document_id == 1
+                                                    }" />
+                                                <span
+                                                    :class="{ 'relative text-black group-hover:text-white flex gap-1 px-2': document.state_document_id == 0, 'relative text-white flex gap-1 px-2': document.state_document_id == 1 }">
                                                     <img :src="SendInvoiceIon" class="w-4 h-4 " />
                                                     <p class="self-center ">Enviar</p>
                                                 </span>
@@ -515,12 +521,11 @@ onMounted(async () => {
                         Siguiente
                     </span>
 
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
-                    </svg>
-                </button>
-            </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                </svg>
+            </button>
         </div>
-    </section>
-</template>
+    </div>
+</section></template>
