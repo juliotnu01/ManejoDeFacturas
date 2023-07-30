@@ -35,6 +35,7 @@ const firstPageLogin: Ref<any> = ref(localStorage.getItem('firstPageLogin'))
 
 const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "25", "50", "100", "1000"])
 const varSelectedStatusDocument: Ref<String> = ref("ACEPTADA")
+const varStatusSendInvoice: Ref<boolean> = ref(false)
 
 
 //---------- variables computed---------------------
@@ -181,27 +182,23 @@ const SendMail: any = async (data: any) => {
 }
 const SendInvoice: any = async (data: any, type: any) => {
     try {
+        varStatusSendInvoice.value = true
         if (type == 1 || type == 2 || type == 3 || type == 12) {
             let dataSend = await axios.post('/api/ubl2.1/invoice', data)
-            notify( `<p style="font-size: 9px" >${dataSend.data.message}</p>`)
-            notify(` <p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p>`)
-            notify(` <p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
-            
+            notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
+            varStatusSendInvoice.value = false
         } else if (type == 4) {
             let dataSend = await axios.post('/api/ubl2.1/credit-note', data)
-            notify( `<p style="font-size: 9px" >${dataSend.data.message}</p>`)
-            notify(` <p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p>`)
-            notify(` <p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
+            notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
+            varStatusSendInvoice.value = false
         } else if (type == 5) {
             let dataSend = await axios.post('/api/ubl2.1/debit-note', data)
-            notify( `<p style="font-size: 9px" >${dataSend.data.message}</p>`)
-            notify(` <p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p>`)
-            notify(` <p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
+            notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
+            varStatusSendInvoice.value = false
         } else if (type == 11) {
             let dataSend = await axios.post('/api/ubl2.1/support-document', data)
-            notify( `<p style="font-size: 9px" >${dataSend.data.message}</p>`)
-            notify(` <p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p>`)
-            notify(` <p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
+            notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
+            varStatusSendInvoice.value = false
         }
         
         getDataLogin(firstPageLogin)
@@ -483,18 +480,11 @@ onMounted(async () => {
                                         </div>
 
                                         <div class="relative">
-                                            <button :disabled="document.state_document_id === 1"
-                                                @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id)"
-                                                class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow group w-28">
-                                                <div
-                                                    :class="{
-                                                        'absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full': document.state_document_id == 0,
-                                                        'absolute inset-0 bg-gray-400 transition-all duration-[250ms] ease-out w-full': document.state_document_id == 1
-                                                    }" />
-                                                <span
-                                                    :class="{ 'relative text-black group-hover:text-white flex gap-1 px-2': document.state_document_id == 0, 'relative text-white flex gap-1 px-2': document.state_document_id == 1 }">
+                                            <button :disabled="document.state_document_id === 1 && varStatusSendInvoice == false" @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id)" class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow group w-28">
+                                                <div :class="{ 'absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full': document.state_document_id == 0, 'absolute inset-0 bg-gray-400 transition-all duration-[250ms] ease-out w-full': document.state_document_id == 1}" />
+                                                <span :class="{ 'relative text-black group-hover:text-white flex gap-1 px-2': document.state_document_id == 0, 'relative text-white flex gap-1 px-2': document.state_document_id == 1 }">
                                                     <img :src="SendInvoiceIon" class="w-4 h-4 " />
-                                                    <p class="self-center ">Enviar</p>
+                                                    <p class="self-center ">{{varStatusSendInvoice == true ? 'Enviando...':'Enviar'}}</p>
                                                 </span>
                                             </button>
                                         </div>
