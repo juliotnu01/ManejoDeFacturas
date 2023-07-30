@@ -23,8 +23,8 @@ const varBuscadorCliente: Ref<String | null> = ref('');
 const pagination: Ref<any | null> = ref({});
 const store: any = useLoginStore()
 const dateValue: Ref<{ startDate: String, endDate: String }> = ref({
-    startDate: moment(new Date()).startOf('month').format('YYYY-MM-DD HH:mm:ss'),
-    endDate: moment(new Date()).endOf('month').format('YYYY-MM-DD HH:mm:ss')
+    startDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+    endDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
 })
 const OpcionesPaginas: any = ref([])
 const paginaSelected: Ref<String> = ref('')
