@@ -183,8 +183,16 @@ const SendMail: any = async (data: any) => {
 const SendInvoice: any = async (data: any, type: any) => {
     try {
         varStatusSendInvoice.value = true
-        if (type == 1 || type == 2 || type == 3 || type == 12) {
+        if (type == 1 || type == 12) {
             let dataSend = await axios.post('/api/ubl2.1/invoice', data)
+            notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
+            varStatusSendInvoice.value = false
+        } else if (type == 2) {
+            let dataSend = await axios.post('/api/ubl2.1/invoice-export', data)
+            notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
+            varStatusSendInvoice.value = false
+        } else if (type == 3) {
+            let dataSend = await axios.post('/api/ubl2.1/invoice-contingency', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
             varStatusSendInvoice.value = false
         } else if (type == 4) {
@@ -197,6 +205,10 @@ const SendInvoice: any = async (data: any, type: any) => {
             varStatusSendInvoice.value = false
         } else if (type == 11) {
             let dataSend = await axios.post('/api/ubl2.1/support-document', data)
+            notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
+            varStatusSendInvoice.value = false
+        } else if (type == 13) {
+            let dataSend = await axios.post('/api/ubl2.1/sd-credit-note', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
             varStatusSendInvoice.value = false
         }
@@ -222,14 +234,14 @@ onMounted(async () => {
 <template>
     <section class="container px-0 mx-auto">
         <!-- cabecera -->
-        <div class="sm:flex sm:items-center sm:justify-between">
-            <div>
+        <div class="flex items-center w-full gap-1 mt-1 ">
+            <div class="w-10/12 max-w-md mx-auto">
                 <div class="flex items-center gap-x-3">
-                    <h2 class="text-lg font-medium text-gray-800 ">ARISTA SOFTWARE - CONSULTAR DOCUMENTOS ELECTRONICOS - Nit: 7535365</h2>
+                    <h2 class="text-lg font-medium text-gray-800 ">ARISTA SOFTWARE - CONSULTAR DOCUMENTOS</h2>
                 </div>
             </div>
 
-            <div class="flex items-center mt-1 gap-x-3">
+            <div class="w-4/12 max-w-md mx-auto">
                 <button
                     class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 transition-colors duration-200 bg-white border rounded-lg gap-x-2 sm:w-auto hover:bg-gray-100">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -245,13 +257,10 @@ onMounted(async () => {
                         </defs>
                     </svg>
 
-                    <span>Enviar Facturas Esto que?</span>
+                    <span>Enviar Facturas</span>
                 </button>
             </div>
-        </div>
-
-        <div class="flex items-center w-full gap-2 mt-1 ">
-            <div class="w-2/12 max-w-md mx-auto">
+            <div class="w-3/12 max-w-md mx-auto">
                 <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(firstPageLogin)" v-model="itemPerPageSelected">
                     <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in varitemPerPage" :key="p">
@@ -259,7 +268,7 @@ onMounted(async () => {
                     </option>
                 </select>
             </div>
-            <div class="w-2/12 max-w-md mx-auto">
+            <div class="max-w-md mx-auto w-/12">
                 <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(paginaSelected)" v-model="paginaSelected">
                     <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas" :key="p">
@@ -267,6 +276,9 @@ onMounted(async () => {
                     </option>
                 </select>
             </div>
+        </div>
+
+        <div class="flex items-center w-full gap-2 mt-1 ">
             <div class="w-2/12 max-w-md mx-auto">
                 <select @change="getDataLogin(firstPageLogin)" id="seleccionar"
                     class="block p-2 border border-gray-500 rounded-lg" v-model="varSelectedStatusDocument">
@@ -316,7 +328,7 @@ onMounted(async () => {
 
         </div>
         <!-- body -->
-        <div class="flex flex-col mt-6">
+        <div class="flex flex-col mt-2">
             <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                     <div class="overflow-hidden border border-gray-200 md:rounded-lg">
@@ -340,9 +352,6 @@ onMounted(async () => {
                                     Tipo
                                 </th>
 
-                                <th scope="col" class="px-12 font-normal text-center text-white ">
-                                    Estado
-                                </th>
                                 <th scope="col" class="px-4 font-normal text-center text-white ">
                                     Valor documento
                                 </th>
@@ -352,13 +361,16 @@ onMounted(async () => {
                                 <th scope="col" class="px-4 font-normal text-center text-white ">
                                     Acciones
                                 </th>
+                                <th scope="col" class="px-12 font-normal text-center text-white ">
+                                    Estado
+                                </th>
 
 
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200 text-[11px]">
+                            <tbody class="bg-white divide-gray-200 text-[10px]">
                                 <tr v-for="(document, d) in filterDocumentDate" :key="d" class="hover:bg-[#f3b8b0eb]">
                                     <td>
-                                        <div class="ml-5">
+                                        <div class="ml-1">
                                             <div
                                                 class="relative flex items-center justify-center flex-shrink-0 w-5 h-5 bg-gray-200 rounded-sm">
                                                 <input placeholder="checkbox" type="checkbox"
@@ -402,45 +414,14 @@ onMounted(async () => {
                                     <td class="px-4 py-4 text-center whitespace-nowrap">
                                         <div>
                                             <p class="font-bold text-gray-900 ">
-                                                {{ document.type_document_id == 1 ? 'Factura de venta nacional' :
-                                                    document.type_document_id == 2 ? 'Factura de Exportacion' :
-                                                        document.type_document_id == 3 ? 'Factura de contingencia' :
-                                                            document.type_document_id == 4 ? 'Nota de credito' :
-                                                                document.type_document_id == 5 ? 'Nota de debito' :
-                                                                    document.type_document_id == 11 ? 'Documento sopoerte electronico' :
-                                                                        document.type_document_id == 12 ? 'Factura electronica de venta tipo - 04' :
+                                                {{ document.type_document_id == 1 ? 'Factura venta nacional' :
+                                                   document.type_document_id == 2 ? 'Factura Exportacion' :
+                                                   document.type_document_id == 3 ? 'Factura contingencia' :
+                                                   document.type_document_id == 4 ? 'Nota credito' :
+                                                   document.type_document_id == 5 ? 'Nota debito' :
+                                                   document.type_document_id == 11 ? 'Documento soporte' :
+                                                   document.type_document_id == 12 ? 'Factura venta tipo-04' :
                                                                             '' }}
-                                            </p>
-                                        </div>
-                                    </td>
-                                    <td class="px-12 py-4 text-center whitespace-nowrap">
-                                        <div
-                                            :class="{ 'flex justify-center gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-emerald-100/60 w-fit': document.state_document_id == 1, 'flex gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-red-100/60 w-fit': document.state_document_id == 0 }">
-                                            <svg v-if="document.state_document_id == 1" xmlns="http://www.w3.org/2000/svg"
-                                                width="20" height="20" viewBox="0 0 20 20" fill="#02B126">
-                                                <path
-                                                    d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667"
-                                                    stroke="#52525B" stroke-width="1.25" stroke-linecap="round"
-                                                    stroke-linejoin="round">
-                                                </path>
-                                                <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B"
-                                                    stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
-                                                </circle>
-                                            </svg>
-                                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                viewBox="0 0 20 20" fill="#B20027">
-                                                <path
-                                                    d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667"
-                                                    stroke="#52525B" stroke-width="1.25" stroke-linecap="round"
-                                                    stroke-linejoin="round">
-                                                </path>
-                                                <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B"
-                                                    stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
-                                                </circle>
-                                            </svg>
-                                            <p
-                                                :class="{ 'text-white bg-green-700 w-fit h-fit py-[2px] px-[6px] rounded-lg': document.state_document_id == 1, 'text-white bg-red-700 w-fit h-fit py-[2px] px-[4px] rounded-lg': document.state_document_id == 0 }">
-                                                {{ document.state_document_id == 1 ? 'ACEPTADA' : 'POR ENVIAR ' }}
                                             </p>
                                         </div>
                                     </td>
@@ -455,40 +436,59 @@ onMounted(async () => {
                                         <div class="flex gap-1">
                                             <a :href="`http://apidian.oo/api/download/${document.identification_number}/${document.pdf}`"
                                                 target="__blank">
-                                                <img :src="FilePdfIon" class="w-8 h-8" />
+                                                <img :src="FilePdfIon" class="w-8 h-9" />
                                             </a>
                                             <a :href="`http://apidian.oo/api/download/${document.identification_number}/${document.xml}`"
                                                 target="__blank">
 
-                                                <img :src="FileXmlIon" class="w-8 h-8" />
+                                                <img :src="FileXmlIon" class="w-8 h-9" />
                                             </a>
-                                            <img :src="FileZipIon" class="w-8 h-8" />
                                         </div>
                                     </td>
-                                    <td class="flex flex-col gap-2 px-4 py-4 text-center whitespace-nowrap">
+                                    <td class="px-1 py-2 text-center whitespace-nowrap">
                                         <div class="relative">
                                             <button @click.prevent="SendMail(document)"
-                                                class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow group w-28">
+                                                class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-22 group">
                                                 <div
-                                                    class="absolute inset-0 w-3 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
+                                                    class="absolute inset-0 w-2 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
                                                 </div>
                                                 <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
-                                                    <img :src="sendMailIon" class="w-4 h-4 " />
-                                                    <p class="self-center "> Enviar correo</p>
+                                                    <img :src="sendMailIon" class="w-5 h-5 " />
+                                                    <p font-bold class="self-center "> Correo</p>
                                                 </span>
                                             </button>
                                         </div>
+                                    </td>
 
-                                        <div class="relative">
-                                            <button :disabled="document.state_document_id === 1 && varStatusSendInvoice == false" @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id)" class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow group w-28">
-                                                <div :class="{ 'absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full': document.state_document_id == 0, 'absolute inset-0 bg-gray-400 transition-all duration-[250ms] ease-out w-full': document.state_document_id == 1}" />
-                                                <span :class="{ 'relative text-black group-hover:text-white flex gap-1 px-2': document.state_document_id == 0, 'relative text-white flex gap-1 px-2': document.state_document_id == 1 }">
-                                                    <img :src="SendInvoiceIon" class="w-4 h-4 " />
-                                                    <p class="self-center ">{{varStatusSendInvoice == true ? 'Enviando...':'Enviar'}}</p>
-                                                </span>
-                                            </button>
+                                    <td class="px-1 py-4 text-center whitespace-nowrap">
+                                        <div v-if="document.state_document_id == 1" 
+                                            :class="{ 'flex justify-center gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-emerald-100/60 w-fit': document.state_document_id == 1, 'flex gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-red-100/60 w-fit': document.state_document_id == 0 }">
+                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                width="20" height="20" viewBox="0 0 20 20" fill="#02B126">
+                                                <path
+                                                    d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667"
+                                                    stroke="#52525B" stroke-width="1.25" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                </path>
+                                                <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B"
+                                                    stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+                                                </circle>
+                                            </svg>
+                                            <p class="text-white bg-green-700 w-fit h-fit py-[2px] px-[6px] rounded-lg">
+                                                ACEPTADA
+                                            </p>
                                         </div>
-
+                                        <div v-else class="px-1 py-2 text-center whitespace-nowrap">
+                                            <div class="relative">
+                                                <button @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id)" class="relative w-24 h-6 overflow-hidden text-xs bg-white rounded-lg shadow group">
+                                                    <div class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
+                                                    <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                                        <img :src="SendInvoiceIon" class="w-4 h-4 "/>
+                                                        <p class="self-center font-bold ">{{varStatusSendInvoice == true ? 'Enviando...':'Enviar'}}</p>
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -498,9 +498,9 @@ onMounted(async () => {
             </div>
         </div>
         <!-- footer -->
-        <div class="mt-6 sm:flex sm:items-center sm:justify-between ">
+        <div class="mt-2 sm:flex sm:items-center sm:justify-between ">
             <div class="text-sm text-gray-500 ">
-                Paginas <span class="font-medium text-gray-700 ">{{ pagination.from }} de {{ pagination.to }}</span>
+                Reg-<span class="font-medium text-gray-700 ">{{ pagination.from }} al {{ pagination.to }} {{ page }}</span>
             </div>
 
             <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
@@ -510,7 +510,7 @@ onMounted(async () => {
                         class="w-5 h-5 rtl:-scale-x-100">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
                     </svg>
-                    <span>
+                    <span class="relative flex gap-1 px-2 text-black group-hover:text-blue">
                         Anterior
                     </span>
                 </button>
