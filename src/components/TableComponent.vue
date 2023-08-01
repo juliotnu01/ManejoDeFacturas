@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Ref, ref, onMounted, computed, watch } from "vue";
-import VueTailwindDatepicker from 'vue-tailwind-datepicker'
+//import VueTailwindDatepicker from 'vue-tailwind-datepicker'
 import calendarIon from '../assets/calendar.svg'
 import FilePdfIon from '../assets/pdf-svgrepo-com.svg'
 import FileXmlIon from '../assets/xml-svgrepo-com.svg'
-import FileZipIon from '../assets/zip-svgrepo-com.svg'
+//import FileZipIon from '../assets/zip-svgrepo-com.svg'
 import sendMailIon from '../assets/send-mail-svgrepo-com.svg'
 import SendInvoiceIon from '../assets/send-svgrepo-com.svg'
 import moment from "moment";
@@ -29,12 +29,12 @@ const dateValue: Ref<{ startDate: String, endDate: String }> = ref({
     endDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
 })
 const OpcionesPaginas: any = ref([])
-const paginaSelected: Ref<String> = ref('')
+const paginaSelected: Ref<String> = ref('1')
 const itemPerPageSelected: Ref<String> = ref('10')
 const firstPageLogin: Ref<any> = ref(localStorage.getItem('firstPageLogin'))
 
 const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "25", "50", "100", "1000"])
-const varSelectedStatusDocument: Ref<String> = ref("ACEPTADA")
+const varSelectedStatusDocument: Ref<String> = ref("")
 const varStatusSendInvoice: Ref<boolean> = ref(false)
 
 
@@ -76,7 +76,7 @@ const filterDocumentCliente: any = computed(() => {
             const searchTerm = varBuscadorCliente.value?.toLowerCase();
             if (item.client && item.client != '') {
 
-                const clienteMatches = (item.client) ? JSON.parse(item.client).name.toLowerCase().includes(searchTerm) : '';
+                const clienteMatches = (JSON.parse(item.client).name) ? JSON.parse(item.client).name.toLowerCase().includes(searchTerm) : '';
                 const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
                 return clienteMatches || clienteNumberMatches;
             } else {
@@ -235,12 +235,6 @@ onMounted(async () => {
     <section class="container px-0 mx-auto">
         <!-- cabecera -->
         <div class="flex items-center w-full gap-1 mt-1 ">
-            <div class="w-10/12 max-w-md mx-auto">
-                <div class="flex items-center gap-x-3">
-                    <h2 class="text-lg font-medium text-gray-800 ">ARISTA SOFTWARE - CONSULTAR DOCUMENTOS</h2>
-                </div>
-            </div>
-
             <div class="w-4/12 max-w-md mx-auto">
                 <button
                     class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 transition-colors duration-200 bg-white border rounded-lg gap-x-2 sm:w-auto hover:bg-gray-100">
@@ -279,25 +273,26 @@ onMounted(async () => {
         </div>
 
         <div class="flex items-center w-full gap-2 mt-1 ">
+            <vue-tailwind-datepicker v-model="dateValue"
+                class="h-[38px] border border-gray-500 rounded-lg  placeholder-gray-600/70" />
             <div class="w-2/12 max-w-md mx-auto">
                 <select @change="getDataLogin(firstPageLogin)" id="seleccionar"
                     class="block p-2 border border-gray-500 rounded-lg" v-model="varSelectedStatusDocument">
                     <option value="ACEPTADA" class="text-white bg-green-700">ACEPTADA</option>
                     <option value="POR ENVIAR" class="text-white bg-red-700">POR ENVIAR</option>
+                    <option value=" " class="text-gray bg-white" placeholder="Estado"></option>
                 </select>
             </div>
-            <vue-tailwind-datepicker v-model="dateValue"
-                class="h-[38px] border border-gray-500 rounded-lg  placeholder-gray-600/70 "
-                placeholder="Seleccionar rango de fechas" @change="onSelectSomething($event)" />
             <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
                 <span class="absolute">
+        
                     <svg class="w-5 h-5 mx-3 text-gray-500 dark:text-gray-600" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12">
                         </path>
                     </svg>
                 </span>
-                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por cliente"
+                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por Nit"
                     v-model="varBuscadorCliente"
                     class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-600/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
@@ -321,7 +316,7 @@ onMounted(async () => {
                             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
                 </span>
-                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por documento"
+                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por Número"
                     v-model="varBuscadorNormal"
                     class="block py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
@@ -500,7 +495,7 @@ onMounted(async () => {
         <!-- footer -->
         <div class="mt-2 sm:flex sm:items-center sm:justify-between ">
             <div class="text-sm text-gray-500 ">
-                Reg-<span class="font-medium text-gray-700 ">{{ pagination.from }} al {{ pagination.to }} {{ page }}</span>
+                Reg-<span class="font-medium text-gray-700 ">{{ pagination.from }} al {{ pagination.to }}</span>
             </div>
 
             <div class="flex items-center mt-4 gap-x-4 sm:mt-0">

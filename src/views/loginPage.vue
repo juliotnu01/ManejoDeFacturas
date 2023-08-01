@@ -15,7 +15,7 @@ axios.defaults.baseURL = apiUrl;
 /**
  * variable que contiene el las keys para obtener el envio de las credenciales a la api
  */
-const model: Ref<UserModel | null> = ref({
+const model: Ref<UserModel> = ref({
     email: '',
     pass: ''
 });
