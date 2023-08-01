@@ -12,6 +12,7 @@ import useLoginStore from '@/stores/loginStore'
 import axios from "axios";
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
+import { AES, enc } from 'crypto-js';
 const apiUrl: string = import.meta.env.VITE_API_URL;
 axios.defaults.baseURL = apiUrl;
 const token: string | null = localStorage.getItem('token')
@@ -31,12 +32,10 @@ const dateValue: Ref<{ startDate: String, endDate: String }> = ref({
 const OpcionesPaginas: any = ref([])
 const paginaSelected: Ref<String> = ref('1')
 const itemPerPageSelected: Ref<String> = ref('10')
-const firstPageLogin: Ref<any> = ref(localStorage.getItem('firstPageLogin'))
-
 const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "25", "50", "100", "1000"])
 const varSelectedStatusDocument: Ref<String> = ref("")
-const varStatusSendInvoice: Ref<boolean> = ref(false)
-
+const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
+const firstPageLogin: Ref<any> = ref('')
 
 //---------- variables computed---------------------
 
@@ -157,16 +156,37 @@ const GenerateOpcionDePaginas: any = (url: any = '') => {
 }
 const getDataLogin: any = async (urlPAginate: any = null) => {
     try {
-        var dataL: any = localStorage.getItem('user')
+        const bytes = AES.decrypt(localStorage.getItem('user'), secretKey.value);
+        var dataL: any = bytes.toString(enc.Utf8);
         var model = JSON.parse(dataL)
         let { data } = await axios.post(`${urlPAginate}&itemPerPage=${itemPerPageSelected.value}&aceptada=${varSelectedStatusDocument.value}&created_start=${dateValue.value.startDate}&created_end=${dateValue.value.endDate}&cliente=${varBuscadorCliente.value}&prefijo=${varBuscadorPrefix.value}&documento=${varBuscadorNormal.value}`, { email: model.email, password: model.password })
+
+        // Paso 1: Ordenar el array por fecha de forma descendente
+        data[0].sort((a: any, b: any) => b.created_at - a.created_at);
+        // Paso 2 y 3: Crear un nuevo array y eliminar duplicados por fecha
+        const objetosUnicos: any = [];
+        const fechasVistas = new Set();
+        data[0].forEach((objeto: any) => {
+            const fecha = objeto.number;
+            if (!fechasVistas.has(fecha)) {
+                objetosUnicos.push(objeto);
+                fechasVistas.add(fecha);
+            }
+        });
+        data[0] = objetosUnicos;
+
+        for (const iterator of data[0]) {
+            iterator.isSend = false
+        }
         DataDocument.value = data[0]
         pagination.value = data[1]
-        localStorage.setItem("token", data.user.api_token)
-        localStorage.setItem("firstPageLogin", data[1].first_page_url)
+        localStorage.setItem("token", AES.encrypt( data.user.api_token, secretKey.value).toString())
+        localStorage.setItem("firstPageLogin",  AES.encrypt(data[1].first_page_url, secretKey.value).toString() )
         dataLogin.value = data
         OpcionesPaginas.value = [];
         GenerateOpcionDePaginas(data[1].last_page_url)
+
+        
     } catch (error) {
         console.log(error)
     }
@@ -180,37 +200,37 @@ const SendMail: any = async (data: any) => {
         console.log(error)
     }
 }
-const SendInvoice: any = async (data: any, type: any) => {
+const SendInvoice: any = async (data: any, type: any, document: any) => {
     try {
-        varStatusSendInvoice.value = true
+        document.isSend = true
         if (type == 1 || type == 12) {
             let dataSend = await axios.post('/api/ubl2.1/invoice', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
-            varStatusSendInvoice.value = false
+            document.isSend = false
         } else if (type == 2) {
             let dataSend = await axios.post('/api/ubl2.1/invoice-export', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
-            varStatusSendInvoice.value = false
+            document.isSend = false
         } else if (type == 3) {
             let dataSend = await axios.post('/api/ubl2.1/invoice-contingency', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
-            varStatusSendInvoice.value = false
+            document.isSend = false
         } else if (type == 4) {
             let dataSend = await axios.post('/api/ubl2.1/credit-note', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
-            varStatusSendInvoice.value = false
+            document.isSend = false
         } else if (type == 5) {
             let dataSend = await axios.post('/api/ubl2.1/debit-note', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
-            varStatusSendInvoice.value = false
+            document.isSend = false
         } else if (type == 11) {
             let dataSend = await axios.post('/api/ubl2.1/support-document', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
-            varStatusSendInvoice.value = false
+            document.isSend = false
         } else if (type == 13) {
             let dataSend = await axios.post('/api/ubl2.1/sd-credit-note', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
-            varStatusSendInvoice.value = false
+            document.isSend = false
         }
         
         getDataLogin(firstPageLogin)
@@ -225,7 +245,9 @@ const notify: any = (message: any) => {
 }
 
 onMounted(async () => {
-
+    const bytes =  await AES.decrypt(localStorage.getItem('firstPageLogin'), secretKey.value).toString(enc.Utf8);
+    var decryptedText: any = await bytes;
+    firstPageLogin.value = decryptedText
     getDataLogin(firstPageLogin.value)
 
 })
@@ -394,19 +416,19 @@ onMounted(async () => {
                                                 {{ document.created_at }}</div>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-center whitespace-nowrap">
+                                    <td class="px-4 py-2 text-center whitespace-nowrap">
                                         <div>
                                             <h4 class="font-bold text-black">{{ JSON.parse(document.client).name }}</h4>
                                             <p class="font-bold text-gray-900 ">{{ document.customer }}</p>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-center whitespace-nowrap">
+                                    <td class="px-4 py-2 text-center whitespace-nowrap">
                                         <div>
                                             <p class="font-bold text-gray-900 ">{{ document.prefix }}{{ document.number }}
                                             </p>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-center whitespace-nowrap">
+                                    <td class="px-4 py-2 text-center whitespace-nowrap">
                                         <div>
                                             <p class="font-bold text-gray-900 ">
                                                 {{ document.type_document_id == 1 ? 'Factura venta nacional' :
@@ -420,7 +442,7 @@ onMounted(async () => {
                                             </p>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-center whitespace-nowrap">
+                                    <td class="px-4 py-2 text-center whitespace-nowrap">
                                         <div>
                                             <h4 class="text-black text-[14px] ">
                                                 $ {{ formatNumber(document.total) }}
@@ -455,7 +477,7 @@ onMounted(async () => {
                                         </div>
                                     </td>
 
-                                    <td class="px-1 py-4 text-center whitespace-nowrap">
+                                    <td class="px-1 py-2 text-center whitespace-nowrap">
                                         <div v-if="document.state_document_id == 1" 
                                             :class="{ 'flex justify-center gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-emerald-100/60 w-fit': document.state_document_id == 1, 'flex gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-red-100/60 w-fit': document.state_document_id == 0 }">
                                             <svg xmlns="http://www.w3.org/2000/svg"
@@ -475,11 +497,11 @@ onMounted(async () => {
                                         </div>
                                         <div v-else class="px-1 py-2 text-center whitespace-nowrap">
                                             <div class="relative">
-                                                <button @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id)" class="relative w-24 h-6 overflow-hidden text-xs bg-white rounded-lg shadow group">
+                                                <button @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)" class="relative w-24 h-6 overflow-hidden text-xs bg-white rounded-lg shadow group">
                                                     <div class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
                                                     <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
                                                         <img :src="SendInvoiceIon" class="w-4 h-4 "/>
-                                                        <p class="self-center font-bold ">{{varStatusSendInvoice == true ? 'Enviando...':'Enviar'}}</p>
+                                                        <p class="self-center font-bold ">{{document.isSend == true ? 'Enviando...':'Enviar'}}</p>
                                                     </span>
                                                 </button>
                                             </div>
