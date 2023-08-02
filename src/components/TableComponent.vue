@@ -46,10 +46,10 @@ const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
 
 
 
-    const TK: any = localStorage.getItem('token');
-    const bytes = AES.decrypt(TK, secretKey.value);
-    const token: string | null = bytes.toString(enc.Utf8);
-    axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` }
+const TK: any = localStorage.getItem('token');
+const bytes = AES.decrypt(TK, secretKey.value);
+const token: string | null = bytes.toString(enc.Utf8);
+axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` }
 
 
 const firstPageLogin: Ref<any> = ref('')
@@ -197,6 +197,31 @@ const getDataLogin: any = async (urlPAginate: any = null) => {
         for (const iterator of data[0]) {
             iterator.isSend = false
         }
+
+        // Utilizamos reduce para obtener un nuevo array con registros únicos según 'id'
+        const uniqueObjectsWithStatus1 = data[0].reduce((accumulator: any, currentObject: any) => {
+            // Verificamos si ya existe un registro con el mismo 'id' en el acumulador
+            const existingObject = accumulator.find((obj: any) => obj.id === currentObject.id);
+
+            // Si no existe, agregamos el objeto actual al acumulador
+            if (!existingObject) {
+                accumulator.push(currentObject);
+            } else {
+                // Si existe un objeto con el mismo 'id', verificamos si el 'status' del actual es 1
+                // Si el 'status' del actual es 1, reemplazamos el objeto existente con el actual
+                if (currentObject.state_document_id === 1) {
+                    accumulator[accumulator.indexOf(existingObject)] = currentObject;
+                }
+            }
+
+            return accumulator;
+        }, []);
+
+
+        data[0] = uniqueObjectsWithStatus1
+
+
+
         DataDocument.value = data[0]
         pagination.value = data[1]
         localStorage.setItem("token", AES.encrypt(data.user.api_token, secretKey.value).toString())
@@ -215,7 +240,7 @@ const SendMail: any = async () => {
 
         await axios.post('/api/ubl2.1/send-email', {
             "prefix": modelSendEmail.value.prefix,
-            "number":  modelSendEmail.value.number,
+            "number": modelSendEmail.value.number,
             "showacceptrejectbuttons": false,
             "email_cc_list": [
                 {
@@ -612,7 +637,8 @@ onMounted(async () => {
             <template #content>
                 <div>
                     <label class="block mb-2 font-bold" for="correo">Correo:</label>
-                    <input class="w-full py-2 px-3 rounded border" placeholder="Correo de envio" type="email" id="correo" v-model="modelSendEmail.correo">
+                    <input class="w-full py-2 px-3 rounded border" placeholder="Correo de envio" type="email" id="correo"
+                        v-model="modelSendEmail.correo">
                 </div>
             </template>
 
